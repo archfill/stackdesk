@@ -6,23 +6,51 @@ backend/vendor/
 # Node
 frontend/node_modules/
 frontend/dist/
+frontend/dist-ssr/
 frontend/.env
 frontend/.env.local
 
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Environment files
+*.local
+
 # IDE
-.vscode/
+.vscode/*
+!.vscode/extensions.json
 .idea/
 *.swp
 *.swo
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
 *~
 
 # OS
 .DS_Store
 Thumbs.db
 
-# Logs
-*.log
-
 # Temporary files
 tmp/
 temp/
+
+# MCP
+.mcp.json
+.serena/
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Project specific
+stitch_docker_compose_app_manager/
+stitch_docker_compose_app_manager.zip

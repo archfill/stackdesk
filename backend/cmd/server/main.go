@@ -22,13 +22,13 @@ func main() {
 	// Gin ルーターの設定
 	r := gin.Default()
 
-	// CORS 設定
+	// CORS 設定（開発環境：全てのオリジンを許可）
 	r.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"http://localhost:5173", "http://localhost:3000"},
+		AllowAllOrigins:  true, // 開発環境なので全て許可
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "Authorization"},
 		ExposeHeaders:    []string{"Content-Length"},
-		AllowCredentials: true,
+		AllowCredentials: false, // AllowAllOrigins使用時はfalseが必要
 	}))
 
 	// API ルートの登録
