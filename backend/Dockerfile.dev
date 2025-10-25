@@ -1,5 +1,5 @@
 # 開発用Dockerfile
-FROM golang:1.23-alpine
+FROM golang:1.25-alpine
 
 WORKDIR /app
 
@@ -7,7 +7,10 @@ WORKDIR /app
 RUN go install github.com/air-verse/air@latest
 
 # 依存関係ファイルをコピー
-COPY go.mod go.sum ./
+# go.sumはgo mod downloadで自動生成されるため、go.modのみコピー
+COPY go.mod ./
+
+# 依存関係のダウンロード（go.sumが自動生成される）
 RUN go mod download
 
 # Air設定ファイルをコピー

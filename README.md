@@ -5,11 +5,12 @@ Docker Compose アプリケーションを管理するための Web インター
 ## 技術スタック
 
 ### バックエンド
-- **Go 1.23**
+- **Go 1.25** (最新安定版)
 - **Gin** - HTTPフレームワーク
 - **Docker SDK for Go** - Docker API クライアント
 
 ### フロントエンド
+- **Node.js 24** (最新LTS)
 - **React 18**
 - **TypeScript**
 - **Vite** - ビルドツール（SWC）
