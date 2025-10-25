@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: docker-manager-backend
+    ports:
+      - "8080:8080"
+    environment:
+      - PORT=8080
+    volumes:
+      # Docker socket をマウントして、ホストの Docker を操作可能にする
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - docker-manager-network
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: docker-manager-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    networks:
+      - docker-manager-network
+    restart: unless-stopped
+
+networks:
+  docker-manager-network:
+    driver: bridge

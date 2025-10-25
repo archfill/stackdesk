@@ -1,0 +1,53 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
+    container_name: docker-manager-backend-dev
+    ports:
+      - "8080:8080"
+    environment:
+      - PORT=8080
+      - GIN_MODE=debug
+    volumes:
+      # ソースコードをマウント（ホットリロード用）
+      - ./backend:/app
+      # Docker socket をマウント
+      - /var/run/docker.sock:/var/run/docker.sock
+      # Go modulesキャッシュ（ビルド高速化）
+      - go-modules:/go/pkg/mod
+    networks:
+      - docker-manager-network
+    command: ["air", "-c", ".air.toml"]
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    container_name: docker-manager-frontend-dev
+    ports:
+      - "5173:5173"
+    environment:
+      - NODE_ENV=development
+      - VITE_API_URL=http://backend:8080
+    volumes:
+      # ソースコードをマウント（ホットリロード用）
+      - ./frontend:/app
+      # node_modulesは名前付きボリュームで管理（ホストのnode_modulesと競合しないように）
+      - node-modules:/app/node_modules
+    networks:
+      - docker-manager-network
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+networks:
+  docker-manager-network:
+    driver: bridge
+
+volumes:
+  go-modules:
+  node-modules:

@@ -1,0 +1,20 @@
+# 開発用Dockerfile
+FROM golang:1.23-alpine
+
+WORKDIR /app
+
+# 開発ツールのインストール
+RUN go install github.com/air-verse/air@latest
+
+# 依存関係ファイルをコピー
+COPY go.mod go.sum ./
+RUN go mod download
+
+# Air設定ファイルをコピー
+COPY .air.toml .
+
+# ポート公開
+EXPOSE 8080
+
+# Airによるホットリロード
+CMD ["air", "-c", ".air.toml"]
