@@ -22,10 +22,22 @@
 
 ### 1. 開発環境の起動
 
+**推奨**: 自動検出スクリプトを使用
 ```bash
-# プロジェクトルートで実行
+# プロジェクトルートで実行（docker compose / docker-compose 自動検出）
+./dev.sh
+```
+
+**または手動で起動**:
+```bash
+# Docker Compose plugin (新しい方式)
+docker compose -f docker-compose.dev.yml up --build
+
+# または docker-compose standalone (古い方式)
 docker-compose -f docker-compose.dev.yml up --build
 ```
+
+> **Note**: このプロジェクトは `docker compose` (plugin) と `docker-compose` (standalone) の両方に対応しています。
 
 初回起動時は依存関係のインストールとビルドに数分かかります。
 
@@ -55,36 +67,38 @@ docker-compose -f docker-compose.dev.yml up --build
 
 ## 📝 ログの確認
 
+> 以下のコマンド例では `docker compose` を使用していますが、`docker-compose` でも同じように動作します。
+
 ### 全体のログを表示
 ```bash
-docker-compose -f docker-compose.dev.yml logs -f
+docker compose -f docker-compose.dev.yml logs -f
 ```
 
 ### バックエンドのみ
 ```bash
-docker-compose -f docker-compose.dev.yml logs -f backend
+docker compose -f docker-compose.dev.yml logs -f backend
 ```
 
 ### フロントエンドのみ
 ```bash
-docker-compose -f docker-compose.dev.yml logs -f frontend
+docker compose -f docker-compose.dev.yml logs -f frontend
 ```
 
 ## 🛠 よくあるコマンド
 
 ### 環境の停止
 ```bash
-docker-compose -f docker-compose.dev.yml down
+docker compose -f docker-compose.dev.yml down
 ```
 
 ### 完全にクリーンアップ（ボリューム含む）
 ```bash
-docker-compose -f docker-compose.dev.yml down -v
+docker compose -f docker-compose.dev.yml down -v
 ```
 
 ### 再ビルド
 ```bash
-docker-compose -f docker-compose.dev.yml up --build
+docker compose -f docker-compose.dev.yml up --build
 ```
 
 ### コンテナ内でコマンド実行
@@ -92,25 +106,25 @@ docker-compose -f docker-compose.dev.yml up --build
 #### バックエンドコンテナ
 ```bash
 # Go のコマンドを実行
-docker-compose -f docker-compose.dev.yml exec backend go version
+docker compose -f docker-compose.dev.yml exec backend go version
 
 # 依存関係の追加
-docker-compose -f docker-compose.dev.yml exec backend go get github.com/example/package
+docker compose -f docker-compose.dev.yml exec backend go get github.com/example/package
 
 # テスト実行
-docker-compose -f docker-compose.dev.yml exec backend go test ./...
+docker compose -f docker-compose.dev.yml exec backend go test ./...
 ```
 
 #### フロントエンドコンテナ
 ```bash
 # npm パッケージを追加
-docker-compose -f docker-compose.dev.yml exec frontend npm install axios
+docker compose -f docker-compose.dev.yml exec frontend npm install axios
 
 # TypeScript の型チェック
-docker-compose -f docker-compose.dev.yml exec frontend npm run type-check
+docker compose -f docker-compose.dev.yml exec frontend npm run type-check
 
 # ビルド
-docker-compose -f docker-compose.dev.yml exec frontend npm run build
+docker compose -f docker-compose.dev.yml exec frontend npm run build
 ```
 
 ## 🐛 デバッグ
@@ -120,7 +134,7 @@ docker-compose -f docker-compose.dev.yml exec frontend npm run build
 Air のログでビルドエラーや実行時エラーを確認できます：
 
 ```bash
-docker-compose -f docker-compose.dev.yml logs -f backend
+docker compose -f docker-compose.dev.yml logs -f backend
 ```
 
 出力例：
@@ -136,7 +150,7 @@ backend-dev  | [GIN-debug] Listening and serving HTTP on :8080
 Vite の開発サーバーログを確認：
 
 ```bash
-docker-compose -f docker-compose.dev.yml logs -f frontend
+docker compose -f docker-compose.dev.yml logs -f frontend
 ```
 
 ブラウザの開発者ツール（F12）でもエラーを確認できます。
@@ -191,22 +205,22 @@ lsof -i :5173
 ### ホットリロードが効かない
 ```bash
 # コンテナを再起動
-docker-compose -f docker-compose.dev.yml restart
+docker compose -f docker-compose.dev.yml restart
 
 # 完全に再ビルド
-docker-compose -f docker-compose.dev.yml down
-docker-compose -f docker-compose.dev.yml up --build
+docker compose -f docker-compose.dev.yml down
+docker compose -f docker-compose.dev.yml up --build
 ```
 
 ### 依存関係の問題
 ```bash
 # バックエンド
-docker-compose -f docker-compose.dev.yml exec backend go mod tidy
-docker-compose -f docker-compose.dev.yml restart backend
+docker compose -f docker-compose.dev.yml exec backend go mod tidy
+docker compose -f docker-compose.dev.yml restart backend
 
 # フロントエンド
-docker-compose -f docker-compose.dev.yml exec frontend npm install
-docker-compose -f docker-compose.dev.yml restart frontend
+docker compose -f docker-compose.dev.yml exec frontend npm install
+docker compose -f docker-compose.dev.yml restart frontend
 ```
 
 ## 💡 Tips

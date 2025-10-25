@@ -28,20 +28,30 @@ Docker Compose アプリケーションを管理するための Web インター
 
 ### 前提条件
 - Docker
-- Docker Compose
+- Docker Compose (`docker compose` または `docker-compose`)
 
 ### 開発環境の起動（推奨）
 
 **🔥 フルホットリロード対応！**
 
+**推奨**: 自動検出スクリプトを使用
 ```bash
-# 開発環境を起動（ホットリロード有効）
-docker-compose -f docker-compose.dev.yml up --build
-
-# アクセス
-# フロントエンド: http://localhost:5173
-# バックエンドAPI: http://localhost:8080
+# docker compose / docker-compose を自動検出して起動
+./dev.sh
 ```
+
+**または手動で起動**:
+```bash
+# Docker Compose plugin (新しい方式)
+docker compose -f docker-compose.dev.yml up --build
+
+# または docker-compose standalone (古い方式)
+docker-compose -f docker-compose.dev.yml up --build
+```
+
+**アクセス URL:**
+- フロントエンド: http://localhost:5173
+- バックエンドAPI: http://localhost:8080
 
 **ホットリロード機能:**
 - ✅ **バックエンド (Go)**: Air による自動リロード - `.go` ファイル変更を検知して自動再起動
@@ -55,8 +65,10 @@ docker-compose -f docker-compose.dev.yml up --build
 
 ```bash
 # 本番環境を起動
-docker-compose up -d --build
+docker compose up -d --build
+# または: docker-compose up -d --build
 
+# アクセス
 # バックエンド: http://localhost:8080
 # フロントエンド: http://localhost:3000
 ```
