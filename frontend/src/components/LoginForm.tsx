@@ -1,6 +1,10 @@
 import { useState } from "react";
+import { ArrowRight } from "lucide-react";
+
 import { useLogin } from "../hooks/useAuth";
-import { AuthCard, FormField } from "./AuthGate";
+import { AuthShell } from "./AuthGate";
+import { Button } from "./ui/button";
+import { Field } from "./ui/Field";
 
 export default function LoginForm() {
   const [username, setUsername] = useState("");
@@ -13,36 +17,51 @@ export default function LoginForm() {
   };
 
   return (
-    <AuthCard title="docker-manager" subtitle="ログインしてください">
-      <form onSubmit={handleSubmit} noValidate>
-        <FormField
-          label="ユーザー名"
+    <AuthShell
+      status="login"
+      title="Sign in to continue"
+      subtitle="Authenticate with your operator credentials to reach the host."
+      hint="Lost your password? An admin can reset it from the Users page after signing in. The MCP endpoint uses its own bearer tokens — issue them from Tokens once logged in."
+    >
+      <form onSubmit={handleSubmit} className="flex flex-col gap-4" noValidate>
+        <Field
+          label="username"
           value={username}
-          onChange={setUsername}
+          onChange={(e) => setUsername(e.target.value)}
           autoComplete="username"
+          spellCheck={false}
+          autoFocus
           required
         />
-        <FormField
-          label="パスワード"
+        <Field
+          label="password"
           type="password"
           value={password}
-          onChange={setPassword}
+          onChange={(e) => setPassword(e.target.value)}
           autoComplete="current-password"
           required
         />
         {login.error && (
-          <p className="mb-3 text-xs text-red-500">
-            {(login.error as Error).message}
+          <p className="font-mono text-[11.5px] text-[color:var(--color-err)]">
+            ▶ {(login.error as Error).message}
           </p>
         )}
-        <button
+        <Button
           type="submit"
+          variant="accent"
+          size="lg"
           disabled={login.isPending || !username || !password}
-          className="w-full rounded-md bg-primary px-3 py-2 text-sm font-medium text-white transition hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
+          className="mt-2 justify-between"
         >
-          {login.isPending ? "ログイン中…" : "ログイン"}
-        </button>
+          <span className="font-mono text-[11px] uppercase tracking-[0.16em] opacity-70">
+            {login.isPending ? "authenticating" : "sign in"}
+          </span>
+          <span className="flex items-center gap-1.5 font-semibold tracking-tight">
+            continue
+            <ArrowRight className="size-4" />
+          </span>
+        </Button>
       </form>
-    </AuthCard>
+    </AuthShell>
   );
 }

@@ -1,6 +1,10 @@
 import { useState } from "react";
+import { ShieldCheck } from "lucide-react";
+
 import { useSetup } from "../hooks/useAuth";
-import { AuthCard, FormField } from "./AuthGate";
+import { AuthShell } from "./AuthGate";
+import { Button } from "./ui/button";
+import { Field } from "./ui/Field";
 
 export default function SetupWizard() {
   const [username, setUsername] = useState("");
@@ -13,62 +17,77 @@ export default function SetupWizard() {
     e.preventDefault();
     setLocalError(null);
     if (password.length < 8) {
-      setLocalError("パスワードは 8 文字以上にしてください");
+      setLocalError("password must be at least 8 characters");
       return;
     }
     if (password !== confirm) {
-      setLocalError("確認用パスワードが一致しません");
+      setLocalError("password confirmation does not match");
       return;
     }
     setup.mutate({ username: username.trim(), password });
   };
 
+  const err = localError ?? (setup.error as Error)?.message;
+
   return (
-    <AuthCard
-      title="初期セットアップ"
-      subtitle="最初の管理者ユーザーを作成します"
+    <AuthShell
+      status="setup"
+      title="Bootstrap your operator"
+      subtitle="No accounts exist on this host yet. Create the first administrator below — they will own user management and MCP token issuance."
+      hint="This is a one-time setup. After creation, you will land in the dashboard signed in. Subsequent users are added from the Users page (admin only)."
     >
-      <form onSubmit={handleSubmit} noValidate>
-        <FormField
-          label="ユーザー名"
+      <form onSubmit={handleSubmit} className="flex flex-col gap-4" noValidate>
+        <Field
+          label="username"
           value={username}
-          onChange={setUsername}
+          onChange={(e) => setUsername(e.target.value)}
           autoComplete="username"
+          spellCheck={false}
+          autoFocus
           required
         />
-        <FormField
-          label="パスワード (8 文字以上)"
+        <Field
+          label="password"
           type="password"
           value={password}
-          onChange={setPassword}
+          onChange={(e) => setPassword(e.target.value)}
           autoComplete="new-password"
           required
           minLength={8}
+          hint="8 characters minimum · bcrypt cost 10"
         />
-        <FormField
-          label="パスワード (確認)"
+        <Field
+          label="confirm password"
           type="password"
           value={confirm}
-          onChange={setConfirm}
+          onChange={(e) => setConfirm(e.target.value)}
           autoComplete="new-password"
           required
           minLength={8}
         />
-        {(localError || setup.error) && (
-          <p className="mb-3 text-xs text-red-500">
-            {localError ?? (setup.error as Error).message}
+        {err && (
+          <p className="font-mono text-[11.5px] text-[color:var(--color-err)]">
+            ▶ {err}
           </p>
         )}
-        <button
+        <Button
           type="submit"
+          variant="accent"
+          size="lg"
           disabled={
             setup.isPending || !username || !password || password !== confirm
           }
-          className="w-full rounded-md bg-primary px-3 py-2 text-sm font-medium text-white transition hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
+          className="mt-2 justify-between"
         >
-          {setup.isPending ? "作成中…" : "管理者を作成してログイン"}
-        </button>
+          <span className="font-mono text-[11px] uppercase tracking-[0.16em] opacity-70">
+            {setup.isPending ? "provisioning" : "create admin"}
+          </span>
+          <span className="flex items-center gap-1.5 font-semibold tracking-tight">
+            initialize
+            <ShieldCheck className="size-4" />
+          </span>
+        </Button>
       </form>
-    </AuthCard>
+    </AuthShell>
   );
 }

@@ -10,7 +10,7 @@ function App() {
 
   return (
     <AuthGate>
-      <div className="flex min-h-screen bg-background-light dark:bg-background-dark text-gray-200">
+      <div className="flex min-h-screen bg-[color:var(--color-ink-0)] text-[color:var(--color-text-1)]">
         <Sidebar activeView={activeView} onViewChange={setActiveView} />
         {activeView === "tokens" ? (
           <TokenManager />

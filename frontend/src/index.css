@@ -1,25 +1,261 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200');
+@import url("https://fonts.googleapis.com/css2?family=Funnel+Display:wght@400;500;600;700;800&family=Funnel+Sans:ital,wght@0,300..800;1,300..800&family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;1,400&display=swap");
 
 @import "tailwindcss";
 
+/* ------------------------------------------------------------------
+ * Operator Console — design tokens
+ *
+ * 1 つだけのアクセント (acid lime) + 機能ステータス色を完全に分離する。
+ * 数値・ID・ハッシュは JetBrains Mono、本文は Funnel Sans、見出しは Funnel Display。
+ * 区切りは shadow ではなく hairline border で表現。
+ * ------------------------------------------------------------------ */
+
 @theme {
-  --color-primary: #1173d4;
-  --color-background-light: #f6f7f8;
-  --color-background-dark: #101922;
-  --font-display: "Inter", sans-serif;
-  --radius: 0.25rem;
-  --radius-lg: 0.5rem;
-  --radius-xl: 0.75rem;
-  --radius-full: 9999px;
+  /* surface — deep neutral with a faintly cool undertone */
+  --color-ink-0: #08090d;
+  --color-ink-1: #0e1117;
+  --color-ink-2: #141821;
+  --color-ink-3: #1c2230;
+  --color-rule: #1f2532;
+  --color-rule-bright: #2a3142;
+  --color-glow: rgba(197, 233, 63, 0.16);
+
+  /* foreground */
+  --color-text-0: #f1f4f8;
+  --color-text-1: #c7cdd8;
+  --color-text-2: #8b95a3;
+  --color-text-3: #5c6675;
+  --color-text-4: #3f4858;
+
+  /* accent — acid lime; do NOT use for status */
+  --color-acid: #c5e93f;
+  --color-acid-soft: rgba(197, 233, 63, 0.12);
+  --color-acid-strong: #d9ff42;
+
+  /* status — intentionally distinct from accent */
+  --color-up: #38d399;
+  --color-up-soft: rgba(56, 211, 153, 0.14);
+  --color-down: #6b7280;
+  --color-down-soft: rgba(107, 114, 128, 0.16);
+  --color-warn: #fbb453;
+  --color-warn-soft: rgba(251, 180, 83, 0.14);
+  --color-err: #fb7185;
+  --color-err-soft: rgba(251, 113, 133, 0.14);
+
+  /* role */
+  --color-role-admin: #b794f4;
+  --color-role-admin-soft: rgba(183, 148, 244, 0.14);
+  --color-role-member: #94a3b8;
+  --color-role-member-soft: rgba(148, 163, 184, 0.14);
+
+  /* typography */
+  --font-display: "Funnel Display", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Funnel Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+
+  /* radii */
+  --radius-sm: 3px;
+  --radius: 5px;
+  --radius-lg: 8px;
+  --radius-pill: 9999px;
 }
 
+html,
 body {
-  font-family: var(--font-display);
+  background: var(--color-ink-0);
+  color: var(--color-text-1);
+  font-family: var(--font-sans);
+  font-feature-settings: "ss01", "ss02", "cv11", "calt";
+  font-variant-numeric: tabular-nums;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image: radial-gradient(
+    var(--color-rule) 1px,
+    transparent 1px
+  );
+  background-size: 28px 28px;
+  background-position: 0 0;
+  mask-image: radial-gradient(
+    ellipse at top,
+    rgba(0, 0, 0, 0.7),
+    transparent 65%
+  );
+  opacity: 0.4;
+  z-index: 0;
+}
+
+#root {
+  position: relative;
+  z-index: 1;
+  isolation: isolate;
+}
+
+::selection {
+  background: var(--color-acid);
+  color: var(--color-ink-0);
+}
+
+:focus-visible {
+  outline: 1px solid var(--color-acid);
+  outline-offset: 1px;
+  border-radius: 2px;
+}
+
+input,
+textarea,
+select,
+button {
+  font-family: inherit;
+}
+
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+*::-webkit-scrollbar-thumb {
+  background: var(--color-ink-3);
+  border-radius: 8px;
+  border: 2px solid var(--color-ink-0);
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--color-rule-bright);
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
 }
 
 @layer utilities {
-  .material-symbols-outlined {
-    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  .font-display {
+    font-family: var(--font-display);
+  }
+  .font-mono {
+    font-family: var(--font-mono);
+  }
+
+  .label-eyebrow {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-text-3);
+  }
+
+  .status-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 9999px;
+    flex: 0 0 8px;
+  }
+  .status-dot.up {
+    background: var(--color-up);
+    box-shadow: 0 0 0 0 var(--color-up);
+    animation: pulse-up 2.4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+  .status-dot.down {
+    background: var(--color-down);
+  }
+  .status-dot.warn {
+    background: var(--color-warn);
+  }
+  .status-dot.err {
+    background: var(--color-err);
+    box-shadow: 0 0 0 0 var(--color-err);
+    animation: pulse-err 1.8s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  @keyframes pulse-up {
+    0%,
+    100% {
+      box-shadow: 0 0 0 0 rgba(56, 211, 153, 0.55);
+    }
+    50% {
+      box-shadow: 0 0 0 5px rgba(56, 211, 153, 0);
+    }
+  }
+  @keyframes pulse-err {
+    0%,
+    100% {
+      box-shadow: 0 0 0 0 rgba(251, 113, 133, 0.55);
+    }
+    50% {
+      box-shadow: 0 0 0 5px rgba(251, 113, 133, 0);
+    }
+  }
+
+  .surface {
+    background: var(--color-ink-1);
+    border: 1px solid var(--color-rule);
+  }
+  .surface-elev {
+    background: var(--color-ink-2);
+    border: 1px solid var(--color-rule);
+  }
+
+  .kbd {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    line-height: 1;
+    padding: 3px 6px;
+    border: 1px solid var(--color-rule-bright);
+    background: var(--color-ink-2);
+    color: var(--color-text-2);
+    border-radius: 3px;
+    letter-spacing: 0.04em;
+  }
+
+  .reveal {
+    opacity: 0;
+    transform: translateY(6px);
+    animation: reveal-up 0.55s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+  @keyframes reveal-up {
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  .reveal.delay-1 { animation-delay: 60ms; }
+  .reveal.delay-2 { animation-delay: 120ms; }
+  .reveal.delay-3 { animation-delay: 180ms; }
+  .reveal.delay-4 { animation-delay: 240ms; }
+  .reveal.delay-5 { animation-delay: 300ms; }
+
+  .num {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* terminal-style scan line backdrop used on auth screen */
+  .terminal-bg {
+    position: relative;
+    overflow: hidden;
+  }
+  .terminal-bg::before {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    background-image:
+      repeating-linear-gradient(
+        180deg,
+        rgba(255, 255, 255, 0.012) 0,
+        rgba(255, 255, 255, 0.012) 1px,
+        transparent 1px,
+        transparent 3px
+      ),
+      radial-gradient(
+        ellipse at 20% 0%,
+        var(--color-glow) 0,
+        transparent 55%
+      );
+    pointer-events: none;
   }
 }

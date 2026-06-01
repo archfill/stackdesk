@@ -1,143 +1,197 @@
-import { useState } from 'react';
-import type { ComposeApp } from '../types';
-import { apiClient } from '../api/client';
+import { useState } from "react";
+import { Download, FileText, Play, RotateCw, Square } from "lucide-react";
+
+import { apiClient } from "../api/client";
+import type { ComposeApp } from "../types";
+import { cn } from "../lib/utils";
+import { StatusBadge } from "./ui/StatusBadge";
 
 interface AppCardProps {
   app: ComposeApp;
+  index: number;
   onRefresh: () => void;
   onViewLogs: (appName: string) => void;
   onCheckUpdates: (appName: string) => void;
 }
 
-export default function AppCard({ app, onRefresh, onViewLogs, onCheckUpdates }: AppCardProps) {
+export default function AppCard({
+  app,
+  index,
+  onRefresh,
+  onViewLogs,
+  onCheckUpdates,
+}: AppCardProps) {
   const [isLoading, setIsLoading] = useState(false);
 
   const handleAction = async (action: () => Promise<void>) => {
     setIsLoading(true);
     try {
       await action();
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      await new Promise((r) => setTimeout(r, 500));
       onRefresh();
-    } catch (error) {
-      console.error('Action failed:', error);
-      alert(`操作に失敗しました: ${error}`);
+    } catch (err) {
+      console.error("Action failed:", err);
+      alert(`操作に失敗しました: ${err}`);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const getStatusColor = () => {
-    switch (app.status) {
-      case 'running':
-        return 'bg-green-500';
-      case 'stopped':
-        return 'bg-gray-500';
-      case 'error':
-        return 'bg-orange-500';
-      default:
-        return 'bg-gray-500';
-    }
-  };
-
-  const getStatusText = () => {
-    switch (app.status) {
-      case 'running':
-        return 'Running';
-      case 'stopped':
-        return 'Stopped';
-      case 'error':
-        return 'Error';
-      default:
-        return 'Unknown';
-    }
-  };
+  const tone =
+    app.status === "running" ? "up" : app.status === "error" ? "err" : "down";
 
   return (
-    <div className="flex items-center gap-4 bg-gray-800/50 px-4 py-3 rounded-lg hover:bg-gray-800 transition-colors duration-150">
-      <input
-        type="checkbox"
-        className="size-4 rounded border-gray-600 bg-gray-700 text-primary focus:ring-primary focus:ring-offset-gray-900"
-      />
-
-      <div className="flex-1 min-w-0">
-        <p className="text-white text-sm font-medium leading-normal truncate">
-          {app.name}
-        </p>
-      </div>
-
-      <div className="flex items-center gap-2">
-        <div className={`size-2 rounded-full ${getStatusColor()}`}></div>
-        <p className="text-gray-300 text-sm font-normal leading-normal w-16">
-          {getStatusText()}
-        </p>
-      </div>
-
-      <div className="w-20">
-        <p className="text-gray-300 text-sm font-normal leading-normal">
-          {app.services.length} service{app.services.length !== 1 ? 's' : ''}
-        </p>
-      </div>
-
-      <div className="w-32">
-        <p className="text-gray-400 text-sm font-normal leading-normal">
-          {app.lastDeployed || '—'}
-        </p>
-      </div>
-
-      <div className="flex gap-2">
-        <button
-          onClick={() => handleAction(() => apiClient.startApp(app.name))}
-          disabled={isLoading || app.status === 'running'}
-          className="flex items-center justify-center size-8 rounded-lg hover:bg-white/5 transition-colors duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
-          title="Start"
-        >
-          <span className="material-symbols-outlined text-gray-400 text-xl">
-            play_arrow
+    <tr
+      className={cn(
+        "group transition-colors",
+        index % 2 === 1
+          ? "bg-[color:color-mix(in_srgb,var(--color-ink-1)_55%,transparent)]"
+          : undefined,
+        "hover:bg-[color:var(--color-ink-2)]",
+      )}
+    >
+      {/* project */}
+      <td className="border-b border-[color:var(--color-rule)] px-4 py-2.5 align-middle">
+        <div className="flex items-center gap-2">
+          <span className={cn("status-dot", tone)} aria-hidden />
+          <span className="font-display text-[13.5px] font-semibold tracking-tight text-[color:var(--color-text-0)]">
+            {app.name}
           </span>
-        </button>
+        </div>
+      </td>
 
-        <button
-          onClick={() => handleAction(() => apiClient.stopApp(app.name))}
-          disabled={isLoading || app.status === 'stopped'}
-          className="flex items-center justify-center size-8 rounded-lg hover:bg-white/5 transition-colors duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
-          title="Stop"
-        >
-          <span className="material-symbols-outlined text-gray-400 text-xl">
-            stop
-          </span>
-        </button>
+      {/* status */}
+      <td className="border-b border-[color:var(--color-rule)] px-4 py-2.5 align-middle">
+        <StatusBadge tone={tone}>{app.status}</StatusBadge>
+      </td>
 
-        <button
-          onClick={() => handleAction(() => apiClient.restartApp(app.name))}
-          disabled={isLoading}
-          className="flex items-center justify-center size-8 rounded-lg hover:bg-white/5 transition-colors duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
-          title="Restart"
-        >
-          <span className="material-symbols-outlined text-gray-400 text-xl">
-            refresh
-          </span>
-        </button>
+      {/* services */}
+      <td className="border-b border-[color:var(--color-rule)] px-4 py-2.5 align-middle">
+        <ServiceChips services={app.services} />
+      </td>
 
-        <button
-          onClick={() => onViewLogs(app.name)}
-          className="flex items-center justify-center size-8 rounded-lg hover:bg-white/5 transition-colors duration-150"
-          title="View Logs"
-        >
-          <span className="material-symbols-outlined text-gray-400 text-xl">
-            description
-          </span>
-        </button>
+      {/* last deployed */}
+      <td className="border-b border-[color:var(--color-rule)] px-4 py-2.5 align-middle">
+        <span className="num text-[11.5px] text-[color:var(--color-text-2)]">
+          {formatTimestamp(app.lastDeployed)}
+        </span>
+      </td>
 
-        <button
-          onClick={() => onCheckUpdates(app.name)}
-          className="flex items-center justify-center size-8 rounded-lg hover:bg-white/5 transition-colors duration-150"
-          title="Check for Updates"
-        >
-          <span className="material-symbols-outlined text-gray-400 text-xl">
-            update
+      {/* actions */}
+      <td className="border-b border-[color:var(--color-rule)] px-4 py-2 align-middle">
+        <div className="flex items-center justify-end gap-1 opacity-60 transition-opacity group-hover:opacity-100">
+          <RowAction
+            label="start"
+            disabled={isLoading || app.status === "running"}
+            onClick={() => handleAction(() => apiClient.startApp(app.name))}
+            icon={<Play className="size-[14px]" strokeWidth={1.6} />}
+            tone="up"
+          />
+          <RowAction
+            label="stop"
+            disabled={isLoading || app.status === "stopped"}
+            onClick={() => handleAction(() => apiClient.stopApp(app.name))}
+            icon={<Square className="size-[14px]" strokeWidth={1.6} />}
+          />
+          <RowAction
+            label="restart"
+            disabled={isLoading}
+            onClick={() => handleAction(() => apiClient.restartApp(app.name))}
+            icon={<RotateCw className="size-[14px]" strokeWidth={1.6} />}
+          />
+          <RowAction
+            label="logs"
+            onClick={() => onViewLogs(app.name)}
+            icon={<FileText className="size-[14px]" strokeWidth={1.6} />}
+          />
+          <RowAction
+            label="updates"
+            onClick={() => onCheckUpdates(app.name)}
+            icon={<Download className="size-[14px]" strokeWidth={1.6} />}
+          />
+        </div>
+      </td>
+    </tr>
+  );
+}
+
+function RowAction({
+  label,
+  icon,
+  disabled,
+  onClick,
+  tone,
+}: {
+  label: string;
+  icon: React.ReactNode;
+  disabled?: boolean;
+  onClick: () => void;
+  tone?: "up";
+}) {
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      title={label}
+      aria-label={label}
+      className={cn(
+        "flex size-7 items-center justify-center rounded-[3px] border border-transparent transition-colors",
+        "text-[color:var(--color-text-2)] hover:border-[color:var(--color-rule-bright)] hover:bg-[color:var(--color-ink-3)] hover:text-[color:var(--color-text-0)]",
+        tone === "up" &&
+          "hover:text-[color:var(--color-up)] hover:border-[color:color-mix(in_srgb,var(--color-up)_40%,transparent)] hover:bg-[color:var(--color-up-soft)]",
+        "disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:border-transparent",
+      )}
+    >
+      {icon}
+    </button>
+  );
+}
+
+function ServiceChips({ services }: { services: ComposeApp["services"] }) {
+  if (!services || services.length === 0) {
+    return (
+      <span className="text-[11.5px] text-[color:var(--color-text-3)]">—</span>
+    );
+  }
+  const visible = services.slice(0, 3);
+  const remaining = services.length - visible.length;
+  return (
+    <div className="flex flex-wrap items-center gap-1.5">
+      {visible.map((s) => {
+        const isUp = s.status === "running";
+        return (
+          <span
+            key={s.containerId}
+            className={cn(
+              "inline-flex items-center gap-1 rounded-[2px] border px-1.5 py-0.5",
+              "font-mono text-[10.5px] tracking-[-0.01em]",
+              isUp
+                ? "border-[color:color-mix(in_srgb,var(--color-up)_25%,transparent)] bg-[color:var(--color-up-soft)] text-[color:var(--color-up)]"
+                : "border-[color:var(--color-rule)] bg-[color:var(--color-ink-1)] text-[color:var(--color-text-2)]",
+            )}
+            title={`${s.name} · ${s.image} · ${s.state}`}
+          >
+            <span
+              className={cn("status-dot", isUp ? "up" : "down")}
+              style={{ width: 6, height: 6 }}
+            />
+            {s.name}
           </span>
-        </button>
-      </div>
+        );
+      })}
+      {remaining > 0 && (
+        <span className="font-mono text-[10.5px] text-[color:var(--color-text-3)]">
+          +{remaining}
+        </span>
+      )}
     </div>
   );
+}
+
+function formatTimestamp(ts?: string): string {
+  if (!ts) return "—";
+  if (ts.startsWith("0001-")) return "never recorded";
+  const d = new Date(ts);
+  if (Number.isNaN(d.getTime())) return ts;
+  return d.toLocaleString();
 }

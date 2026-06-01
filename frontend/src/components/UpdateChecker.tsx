@@ -1,6 +1,16 @@
-import { useState, useEffect } from 'react';
-import type { ImageUpdate } from '../types';
-import { apiClient } from '../api/client';
+import { useEffect, useState } from "react";
+import {
+  ArrowLeft,
+  CheckCircle2,
+  CloudDownload,
+  RefreshCcw,
+} from "lucide-react";
+
+import { apiClient } from "../api/client";
+import type { ImageUpdate } from "../types";
+import { Button } from "./ui/button";
+import { StatusBadge } from "./ui/StatusBadge";
+import { cn } from "../lib/utils";
 
 interface UpdateCheckerProps {
   appName: string;
@@ -8,118 +18,222 @@ interface UpdateCheckerProps {
   onRefresh: () => void;
 }
 
-export default function UpdateChecker({ appName, onClose, onRefresh }: UpdateCheckerProps) {
+export default function UpdateChecker({
+  appName,
+  onClose,
+  onRefresh,
+}: UpdateCheckerProps) {
   const [updates, setUpdates] = useState<ImageUpdate[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isPulling, setIsPulling] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const fetchUpdates = async () => {
-      try {
-        setIsLoading(true);
-        setError(null);
-        const data = await apiClient.checkUpdates(appName);
-        setUpdates(data || []);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to check for updates');
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  const fetchUpdates = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const data = await apiClient.checkUpdates(appName);
+      setUpdates(data || []);
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Failed to check for updates",
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchUpdates();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [appName]);
 
   const handlePullImages = async () => {
     try {
       setIsPulling(true);
       await apiClient.pullImages(appName);
-      alert('Images pulled successfully! Please restart the application to use the new images.');
+      alert(
+        "Images pulled successfully. Restart the application to use the new images.",
+      );
       onRefresh();
       onClose();
     } catch (err) {
-      alert(`Failed to pull images: ${err instanceof Error ? err.message : 'Unknown error'}`);
+      alert(
+        `Failed to pull images: ${err instanceof Error ? err.message : "Unknown error"}`,
+      );
     } finally {
       setIsPulling(false);
     }
   };
 
-  const hasUpdates = updates.some((update) => update.updateRequired);
+  const hasUpdates = updates.some((u) => u.updateRequired);
+  const upToDateCount = updates.filter((u) => !u.updateRequired).length;
+  const updateCount = updates.filter((u) => u.updateRequired).length;
 
   return (
-    <main className="flex-1 p-8">
-      <div className="max-w-7xl mx-auto">
-        <header className="flex justify-between items-center gap-4 mb-6">
-          <div>
-            <h1 className="text-white text-4xl font-black leading-tight tracking-[-0.033em]">
-              Image Updates
-            </h1>
-            <p className="text-gray-400 text-lg mt-2">{appName}</p>
-          </div>
-          <div className="flex gap-3">
-            {hasUpdates && (
-              <button
-                onClick={handlePullImages}
-                disabled={isPulling}
-                className="flex items-center justify-center h-10 px-4 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors duration-150 disabled:opacity-50"
-              >
-                <span className="material-symbols-outlined mr-2">download</span>
-                {isPulling ? 'Pulling...' : 'Pull Images'}
-              </button>
-            )}
-            <button
-              onClick={onClose}
-              className="flex items-center justify-center h-10 px-4 bg-gray-800 text-white rounded-lg hover:bg-gray-700 transition-colors duration-150"
-            >
-              <span className="material-symbols-outlined mr-2">arrow_back</span>
-              Back
-            </button>
-          </div>
-        </header>
-
-        <div className="bg-gray-800/50 rounded-lg p-6">
-          {isLoading ? (
-            <p className="text-gray-400">Checking for updates...</p>
-          ) : error ? (
-            <p className="text-red-400">Error: {error}</p>
-          ) : updates.length === 0 ? (
-            <div className="text-center py-8">
-              <span className="material-symbols-outlined text-green-400 text-6xl mb-4">
-                check_circle
+    <main className="flex flex-1 flex-col">
+      <header className="flex items-center justify-between gap-4 border-b border-[color:var(--color-rule)] bg-[color:var(--color-ink-0)]/80 px-8 py-4 backdrop-blur-sm">
+        <div className="flex items-center gap-3">
+          <Button variant="ghost" size="icon" onClick={onClose} title="Back">
+            <ArrowLeft className="size-[15px]" strokeWidth={1.6} />
+          </Button>
+          <div className="flex items-center gap-2">
+            <CloudDownload
+              className="size-[14px] text-[color:var(--color-acid)]"
+              strokeWidth={1.6}
+            />
+            <h1 className="font-display text-[18px] font-semibold leading-none tracking-[-0.02em] text-[color:var(--color-text-0)]">
+              image updates
+              <span className="text-[color:var(--color-text-3)]"> · </span>
+              <span className="font-mono text-[14px] font-medium text-[color:var(--color-text-2)]">
+                {appName}
               </span>
-              <p className="text-white text-lg">All images are up to date!</p>
+            </h1>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <Button variant="neutral" size="md" onClick={fetchUpdates}>
+            <RefreshCcw
+              className={cn("size-[13px]", isLoading && "animate-spin")}
+              strokeWidth={1.7}
+            />
+            recheck
+          </Button>
+          {hasUpdates && (
+            <Button
+              variant="accent"
+              size="md"
+              onClick={handlePullImages}
+              disabled={isPulling}
+            >
+              <CloudDownload className="size-[14px]" strokeWidth={1.7} />
+              {isPulling ? "pulling…" : "pull images"}
+            </Button>
+          )}
+        </div>
+      </header>
+
+      <div className="flex-1 overflow-auto px-8 py-6">
+        <div className="mx-auto flex max-w-5xl flex-col gap-6">
+          <section className="surface flex flex-wrap items-center justify-between gap-4 rounded-[5px] px-5 py-4">
+            <div className="flex items-center gap-4">
+              <SummaryStat tone="up" value={upToDateCount} label="up to date" />
+              <span className="h-6 w-px bg-[color:var(--color-rule)]" />
+              <SummaryStat tone="warn" value={updateCount} label="updatable" />
             </div>
+            <p className="max-w-md text-[12px] leading-relaxed text-[color:var(--color-text-2)]">
+              Comparison runs against the registry manifest digest. Locally
+              built images without a remote tag are skipped.
+            </p>
+          </section>
+
+          {isLoading && updates.length === 0 ? (
+            <section className="surface rounded-[5px] p-6">
+              <p className="text-[12.5px] text-[color:var(--color-text-2)]">
+                inspecting registry manifests…
+              </p>
+            </section>
+          ) : error ? (
+            <section className="surface rounded-[5px] border border-[color:color-mix(in_srgb,var(--color-err)_35%,transparent)] bg-[color:var(--color-err-soft)] p-6">
+              <p className="font-mono text-[12px] text-[color:var(--color-err)]">
+                ▶ {error}
+              </p>
+            </section>
+          ) : updates.length === 0 ? (
+            <section className="surface flex flex-col items-center justify-center gap-2 rounded-[5px] px-6 py-12 text-center">
+              <CheckCircle2
+                className="size-7 text-[color:var(--color-up)]"
+                strokeWidth={1.5}
+              />
+              <p className="font-display text-[14px] font-semibold tracking-tight text-[color:var(--color-text-0)]">
+                everything is current
+              </p>
+              <p className="max-w-md text-[12px] leading-relaxed text-[color:var(--color-text-3)]">
+                No comparable manifests differ from the local digest. Locally
+                built images may not appear here.
+              </p>
+            </section>
           ) : (
-            <div className="space-y-4">
-              {updates.map((update, index) => (
-                <div
-                  key={index}
-                  className="flex items-center justify-between p-4 bg-gray-900/50 rounded-lg"
-                >
-                  <div className="flex-1">
-                    <p className="text-white font-medium">{update.serviceName}</p>
-                    <p className="text-gray-400 text-sm mt-1">{update.currentImage}</p>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    {update.updateRequired ? (
-                      <div className="flex items-center gap-2 text-orange-400">
-                        <span className="material-symbols-outlined">warning</span>
-                        <span className="text-sm font-medium">Update Available</span>
+            <section className="surface overflow-hidden rounded-[5px]">
+              <header className="border-b border-[color:var(--color-rule)] px-5 py-3">
+                <h2 className="font-display text-[13px] font-semibold tracking-tight text-[color:var(--color-text-0)]">
+                  Per-service manifest diff
+                </h2>
+              </header>
+              <ul className="divide-y divide-[color:var(--color-rule)]">
+                {updates.map((u, idx) => (
+                  <li
+                    key={`${u.serviceName}-${idx}`}
+                    className="grid grid-cols-1 gap-3 px-5 py-3 sm:grid-cols-[1fr_auto] sm:items-center"
+                  >
+                    <div className="min-w-0">
+                      <p className="font-display text-[13.5px] font-semibold tracking-tight text-[color:var(--color-text-0)]">
+                        {u.serviceName}
+                      </p>
+                      <p className="mt-0.5 truncate font-mono text-[11.5px] text-[color:var(--color-text-2)]">
+                        {u.currentImage}
+                      </p>
+                      <div className="mt-1.5 grid grid-cols-1 gap-x-4 gap-y-0.5 font-mono text-[10.5px] text-[color:var(--color-text-3)] sm:grid-cols-2">
+                        <span>
+                          local{" "}
+                          <span className="text-[color:var(--color-text-2)]">
+                            {trimDigest(u.currentDigest)}
+                          </span>
+                        </span>
+                        <span>
+                          remote{" "}
+                          <span className="text-[color:var(--color-text-2)]">
+                            {trimDigest(u.latestDigest)}
+                          </span>
+                        </span>
                       </div>
-                    ) : (
-                      <div className="flex items-center gap-2 text-green-400">
-                        <span className="material-symbols-outlined">check_circle</span>
-                        <span className="text-sm font-medium">Up to date</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
+                    </div>
+                    <div>
+                      {u.updateRequired ? (
+                        <StatusBadge tone="warn" withDot>
+                          update available
+                        </StatusBadge>
+                      ) : (
+                        <StatusBadge tone="up" withDot>
+                          current
+                        </StatusBadge>
+                      )}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </section>
           )}
         </div>
       </div>
     </main>
   );
+}
+
+function SummaryStat({
+  tone,
+  value,
+  label,
+}: {
+  tone: "up" | "warn";
+  value: number;
+  label: string;
+}) {
+  return (
+    <div className="flex items-center gap-2">
+      <span className={cn("status-dot", tone)} />
+      <span className="num font-display text-[18px] font-semibold leading-none text-[color:var(--color-text-0)]">
+        {value}
+      </span>
+      <span className="label-eyebrow">{label}</span>
+    </div>
+  );
+}
+
+function trimDigest(d?: string): string {
+  if (!d) return "—";
+  if (d.startsWith("sha256:")) return d.slice(0, 19) + "…";
+  if (d.length > 18) return d.slice(0, 12) + "…";
+  return d;
 }
