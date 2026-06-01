@@ -3,11 +3,13 @@ package mcp
 
 import (
 	"context"
-	"crypto/subtle"
+	"errors"
 	"net/http"
+	"strconv"
 	"time"
 
 	"docker-manager/internal/docker"
+	"docker-manager/internal/store"
 
 	"github.com/modelcontextprotocol/go-sdk/auth"
 	mcpsdk "github.com/modelcontextprotocol/go-sdk/mcp"
@@ -20,8 +22,8 @@ const (
 )
 
 // New は MCP server を組み立てて http.Handler を返す。
-// token は静的 Bearer トークン。空文字は許容しない（fail-closed）。
-func New(dockerClient *docker.Client, token string) http.Handler {
+// 認証は store.MCPTokens から動的に解決する。
+func New(dockerClient *docker.Client, st *store.Store) http.Handler {
 	server := mcpsdk.NewServer(&mcpsdk.Implementation{
 		Name:    implementationName,
 		Version: implementationVersion,
@@ -33,24 +35,27 @@ func New(dockerClient *docker.Client, token string) http.Handler {
 		return server
 	}, nil)
 
-	verifier := staticTokenVerifier(token)
-	middleware := auth.RequireBearerToken(verifier, &auth.RequireBearerTokenOptions{
+	middleware := auth.RequireBearerToken(storeTokenVerifier(st), &auth.RequireBearerTokenOptions{
 		Scopes: []string{requiredScope},
 	})
 
 	return middleware(handler)
 }
 
-// staticTokenVerifier は定数時間比較で固定トークンを検証する TokenVerifier を返す。
-func staticTokenVerifier(expected string) auth.TokenVerifier {
-	expectedBytes := []byte(expected)
+// storeTokenVerifier は store.MCPTokens から平文トークンを検証する TokenVerifier を返す。
+func storeTokenVerifier(st *store.Store) auth.TokenVerifier {
 	return func(_ context.Context, presented string, _ *http.Request) (*auth.TokenInfo, error) {
-		if subtle.ConstantTimeCompare([]byte(presented), expectedBytes) != 1 {
-			return nil, auth.ErrInvalidToken
+		userID, err := st.MCPTokens.VerifyPlaintext(presented)
+		if err != nil {
+			if errors.Is(err, store.ErrTokenNotFound) {
+				return nil, auth.ErrInvalidToken
+			}
+			return nil, err
 		}
 		return &auth.TokenInfo{
+			UserID:     strconv.FormatInt(userID, 10),
 			Scopes:     []string{requiredScope},
-			Expiration: time.Now().Add(24 * time.Hour),
+			Expiration: time.Now().Add(1 * time.Hour),
 		}, nil
 	}
 }

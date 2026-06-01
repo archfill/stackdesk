@@ -1,4 +1,10 @@
-import type { AuthUser, ComposeApp, ImageUpdate } from "../types";
+import type {
+  AuthUser,
+  ComposeApp,
+  ImageUpdate,
+  MCPToken,
+  MCPTokenCreated,
+} from "../types";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
 
@@ -75,6 +81,22 @@ class ApiClient {
 
   async me(): Promise<{ user: AuthUser }> {
     return this.request("/api/auth/me");
+  }
+
+  // MCP トークン管理
+  async listTokens(): Promise<{ tokens: MCPToken[] }> {
+    return this.request("/api/tokens");
+  }
+
+  async createToken(name: string): Promise<MCPTokenCreated> {
+    return this.request("/api/tokens", {
+      method: "POST",
+      body: JSON.stringify({ name }),
+    });
+  }
+
+  async revokeToken(id: number): Promise<void> {
+    await this.request<void>(`/api/tokens/${id}`, { method: "DELETE" });
   }
 
   // アプリケーション一覧取得

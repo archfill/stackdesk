@@ -66,15 +66,10 @@ func main() {
 	authHandler.RegisterRoutes(r)
 
 	// 既存 API ルート（session 認証必須）
-	api.RegisterRoutes(r, dockerClient, authMgr.RequireUser())
+	api.RegisterRoutes(r, dockerClient, st, authMgr.RequireUser())
 
-	// MCP サーバを /mcp で公開。
-	// MCP_TOKEN 未設定なら fail-closed で起動失敗。
-	mcpToken := os.Getenv("MCP_TOKEN")
-	if mcpToken == "" {
-		log.Fatal("MCP_TOKEN is not set; refusing to start with unauthenticated MCP endpoint")
-	}
-	mcpHandler := mcpserver.New(dockerClient, mcpToken)
+	// MCP サーバを /mcp で公開。トークンは DB (mcp_tokens) で検証する。
+	mcpHandler := mcpserver.New(dockerClient, st)
 	r.Any("/mcp", gin.WrapH(mcpHandler))
 	r.Any("/mcp/*path", gin.WrapH(mcpHandler))
 

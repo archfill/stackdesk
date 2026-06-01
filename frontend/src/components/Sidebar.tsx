@@ -10,8 +10,7 @@ export default function Sidebar({ activeView, onViewChange }: SidebarProps) {
   const logout = useLogout();
   const navItems = [
     { id: "all", label: "All Applications", icon: "apps" },
-    { id: "development", label: "Development", icon: "code" },
-    { id: "production", label: "Production", icon: "cloud" },
+    { id: "tokens", label: "MCP Tokens", icon: "key" },
   ];
 
   return (
@@ -65,17 +64,6 @@ export default function Sidebar({ activeView, onViewChange }: SidebarProps) {
       </div>
 
       <div className="flex flex-col gap-1">
-        <button
-          onClick={() => onViewChange("settings")}
-          className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/5 transition-colors duration-150"
-        >
-          <span className="material-symbols-outlined text-gray-400">
-            settings
-          </span>
-          <p className="text-gray-300 text-sm font-medium leading-normal">
-            Settings
-          </p>
-        </button>
         <button
           onClick={() => logout.mutate()}
           disabled={logout.isPending}

@@ -33,3 +33,17 @@ export interface AuthUser {
   username: string;
   createdAt: number;
 }
+
+export interface MCPToken {
+  id: number;
+  name: string;
+  prefix: string;
+  createdAt: number;
+  lastUsedAt?: number;
+  revokedAt?: number;
+}
+
+export interface MCPTokenCreated {
+  token: MCPToken;
+  plaintext: string;
+}

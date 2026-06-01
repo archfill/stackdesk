@@ -8,14 +8,38 @@ import (
 	"strings"
 	"testing"
 
+	"docker-manager/internal/store"
+
 	"github.com/modelcontextprotocol/go-sdk/auth"
 )
 
-func TestStaticTokenVerifier(t *testing.T) {
-	verify := staticTokenVerifier("right-token")
+// newTestStore は in-memory SQLite を初期化して、テスト用ユーザー 1 件を作成し、
+// 関連するクリーンアップを呼び出し側で行えるよう store を返す。
+func newTestStore(t *testing.T) (*store.Store, int64) {
+	t.Helper()
+	s, err := store.Open(":memory:")
+	if err != nil {
+		t.Fatalf("open store: %v", err)
+	}
+	t.Cleanup(func() { _ = s.Close() })
 
-	t.Run("correct token", func(t *testing.T) {
-		info, err := verify(context.Background(), "right-token", nil)
+	u, err := s.Users.Create("alice", "$2a$10$placeholderHashThatBcryptCannotVerify")
+	if err != nil {
+		t.Fatalf("create user: %v", err)
+	}
+	return s, u.ID
+}
+
+func TestStoreTokenVerifier(t *testing.T) {
+	s, userID := newTestStore(t)
+	plaintext, _, err := s.MCPTokens.Create(userID, "test")
+	if err != nil {
+		t.Fatalf("create token: %v", err)
+	}
+	verify := storeTokenVerifier(s)
+
+	t.Run("valid token", func(t *testing.T) {
+		info, err := verify(context.Background(), plaintext, nil)
 		if err != nil {
 			t.Fatalf("unexpected err: %v", err)
 		}
@@ -30,15 +54,22 @@ func TestStaticTokenVerifier(t *testing.T) {
 		}
 	})
 
-	t.Run("wrong token", func(t *testing.T) {
-		_, err := verify(context.Background(), "wrong-token", nil)
+	t.Run("unknown token", func(t *testing.T) {
+		_, err := verify(context.Background(), "dmt_unknown", nil)
 		if !errors.Is(err, auth.ErrInvalidToken) {
 			t.Errorf("err = %v, want ErrInvalidToken", err)
 		}
 	})
 
-	t.Run("empty token", func(t *testing.T) {
-		_, err := verify(context.Background(), "", nil)
+	t.Run("revoked token", func(t *testing.T) {
+		revokedPlain, tok, err := s.MCPTokens.Create(userID, "to-revoke")
+		if err != nil {
+			t.Fatalf("create token: %v", err)
+		}
+		if err := s.MCPTokens.Revoke(userID, tok.ID); err != nil {
+			t.Fatalf("revoke: %v", err)
+		}
+		_, err = verify(context.Background(), revokedPlain, nil)
 		if !errors.Is(err, auth.ErrInvalidToken) {
 			t.Errorf("err = %v, want ErrInvalidToken", err)
 		}
@@ -46,9 +77,15 @@ func TestStaticTokenVerifier(t *testing.T) {
 }
 
 func TestNewMCPAuth(t *testing.T) {
+	s, userID := newTestStore(t)
+	plaintext, _, err := s.MCPTokens.Create(userID, "test")
+	if err != nil {
+		t.Fatalf("create token: %v", err)
+	}
+
 	// docker.Client は nil でも、認証層は middleware → handler の順なので
-	// 認証失敗時は handler に到達せず、nil 参照を踏まない。
-	h := New(nil, "secret-token")
+	// 認証失敗時は handler に到達せず nil 参照を踏まない。
+	h := New(nil, s)
 	srv := httptest.NewServer(h)
 	defer srv.Close()
 
@@ -60,9 +97,9 @@ func TestNewMCPAuth(t *testing.T) {
 		wantStatus int
 	}{
 		{"no header", "", http.StatusUnauthorized},
-		{"wrong scheme", "Token secret-token", http.StatusUnauthorized},
-		{"wrong token", "Bearer wrong-token", http.StatusUnauthorized},
-		{"correct token", "Bearer secret-token", http.StatusOK},
+		{"wrong scheme", "Token " + plaintext, http.StatusUnauthorized},
+		{"wrong token", "Bearer dmt_wrong", http.StatusUnauthorized},
+		{"correct token", "Bearer " + plaintext, http.StatusOK},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {

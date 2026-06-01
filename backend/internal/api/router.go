@@ -2,14 +2,16 @@ package api
 
 import (
 	"docker-manager/internal/docker"
+	"docker-manager/internal/store"
 
 	"github.com/gin-gonic/gin"
 )
 
 // RegisterRoutes は API ルートを登録する。
-// authMW は /api/apps/* に適用される認証ミドルウェア。/health は常に無認証。
-func RegisterRoutes(r *gin.Engine, dockerClient *docker.Client, authMW gin.HandlerFunc) {
+// authMW は /api/* （setup/auth 以外）に適用される認証ミドルウェア。/health は常に無認証。
+func RegisterRoutes(r *gin.Engine, dockerClient *docker.Client, st *store.Store, authMW gin.HandlerFunc) {
 	handler := NewHandler(dockerClient)
+	tokensHandler := NewTokensHandler(st)
 
 	// ヘルスチェック（無認証）
 	r.GET("/health", handler.HealthCheck)
@@ -31,5 +33,8 @@ func RegisterRoutes(r *gin.Engine, dockerClient *docker.Client, authMW gin.Handl
 		// イメージ更新チェック
 		api.GET("/apps/:name/images/updates", handler.CheckUpdates)
 		api.POST("/apps/:name/images/pull", handler.PullImages)
+
+		// MCP トークン管理
+		tokensHandler.RegisterTokenRoutes(api)
 	}
 }

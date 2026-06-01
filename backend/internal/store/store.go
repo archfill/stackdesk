@@ -10,9 +10,10 @@ import (
 
 // Store は DB 接続とリポジトリ群をまとめる。
 type Store struct {
-	db       *sql.DB
-	Users    *UserRepo
-	Sessions *SessionRepo
+	db        *sql.DB
+	Users     *UserRepo
+	Sessions  *SessionRepo
+	MCPTokens *MCPTokenRepo
 }
 
 // Open は SQLite を開いてマイグレーションを実行する。
@@ -34,9 +35,10 @@ func Open(path string) (*Store, error) {
 	}
 
 	return &Store{
-		db:       db,
-		Users:    &UserRepo{db: db},
-		Sessions: NewSessionRepo(db),
+		db:        db,
+		Users:     &UserRepo{db: db},
+		Sessions:  NewSessionRepo(db),
+		MCPTokens: NewMCPTokenRepo(db),
 	}, nil
 }
 
