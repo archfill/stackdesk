@@ -1,5 +1,9 @@
 # StackDesk
 
+<p align="center">
+  <img src="./frontend/public/favicon.svg" alt="StackDesk icon" width="96" height="96">
+</p>
+
 StackDesk は、サーバ上の Docker Compose アプリケーションと単体コンテナを Web UI と MCP 経由で管理する Compose-first な運用コンソールです。
 
 ## 技術スタック

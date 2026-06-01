@@ -3,6 +3,7 @@ import { Trans, useTranslation } from "react-i18next";
 import { useCurrentUser, useSetupStatus } from "../hooks/useAuth";
 import LoginForm from "./LoginForm";
 import SetupWizard from "./SetupWizard";
+import { BrandIcon } from "./ui/BrandIcon";
 import { LanguageToggle } from "./ui/LanguageToggle";
 
 interface AuthGateProps {
@@ -92,7 +93,7 @@ function BrandingPane({ status }: { status: "login" | "setup" }) {
 +----+----+----+----+----+----+----+----+`}</pre>
 
       <header className="reveal relative z-10 flex items-center gap-3">
-        <BrandMark />
+        <BrandIcon className="size-7" />
         <div className="flex flex-col leading-none">
           <span className="font-display text-[15px] font-semibold tracking-tight text-[color:var(--color-text-0)]">
             StackDesk
@@ -155,35 +156,6 @@ function BrandingPane({ status }: { status: "login" | "setup" }) {
         </div>
       </footer>
     </aside>
-  );
-}
-
-function BrandMark() {
-  return (
-    <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-      <rect
-        x="2"
-        y="2"
-        width="24"
-        height="24"
-        stroke="var(--color-acid)"
-        strokeWidth="1"
-      />
-      <rect
-        x="6"
-        y="6"
-        width="16"
-        height="16"
-        stroke="var(--color-rule-bright)"
-        strokeWidth="1"
-      />
-      <rect x="10" y="10" width="8" height="8" fill="var(--color-acid)" />
-      <path
-        d="M2 14 L26 14 M14 2 L14 26"
-        stroke="var(--color-rule)"
-        strokeWidth="1"
-      />
-    </svg>
   );
 }
 

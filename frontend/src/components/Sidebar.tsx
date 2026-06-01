@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 
 import { useCurrentUser, useLogout } from "../hooks/useAuth";
 import { cn } from "../lib/utils";
+import { BrandIcon } from "./ui/BrandIcon";
 import { LanguageToggle } from "./ui/LanguageToggle";
 
 interface SidebarProps {
@@ -66,7 +67,7 @@ export default function Sidebar({ activeView, onViewChange }: SidebarProps) {
   return (
     <aside className="surface flex w-[248px] flex-shrink-0 flex-col border-y-0 border-l-0 border-r border-[color:var(--color-rule)] bg-[color:var(--color-ink-1)]">
       <div className="flex items-center gap-2.5 border-b border-[color:var(--color-rule)] px-4 py-3.5">
-        <BrandGlyph />
+        <BrandIcon className="size-[22px]" />
         <div className="flex flex-col leading-none">
           <span className="font-display text-[13px] font-semibold tracking-tight text-[color:var(--color-text-0)]">
             StackDesk
@@ -161,22 +162,6 @@ export default function Sidebar({ activeView, onViewChange }: SidebarProps) {
         </button>
       </div>
     </aside>
-  );
-}
-
-function BrandGlyph() {
-  return (
-    <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-      <rect
-        x="1.5"
-        y="1.5"
-        width="19"
-        height="19"
-        stroke="var(--color-acid)"
-        strokeWidth="1"
-      />
-      <rect x="7" y="7" width="8" height="8" fill="var(--color-acid)" />
-    </svg>
   );
 }
 
