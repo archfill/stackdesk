@@ -1,6 +1,6 @@
-import type { ComposeApp, ImageUpdate } from '../types';
+import type { AuthUser, ComposeApp, ImageUpdate } from "../types";
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
 
 class ApiClient {
   private baseUrl: string;
@@ -11,54 +11,95 @@ class ApiClient {
 
   private async request<T>(
     endpoint: string,
-    options?: RequestInit
+    options?: RequestInit,
   ): Promise<T> {
     const url = `${this.baseUrl}${endpoint}`;
 
     try {
       const response = await fetch(url, {
+        credentials: "include",
         ...options,
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
           ...options?.headers,
         },
       });
 
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'API request failed');
+      if (response.status === 204) {
+        return undefined as T;
       }
 
-      return await response.json();
+      if (!response.ok) {
+        const text = await response.text();
+        let message = "API request failed";
+        try {
+          const parsed = JSON.parse(text);
+          message = parsed.message || parsed.error || message;
+        } catch {
+          message = text || message;
+        }
+        const err = new Error(message) as Error & { status?: number };
+        err.status = response.status;
+        throw err;
+      }
+
+      return (await response.json()) as T;
     } catch (error) {
-      console.error('API request error:', error);
+      console.error("API request error:", error);
       throw error;
     }
   }
 
+  // 認証関連
+  async setupStatus(): Promise<{ needsSetup: boolean }> {
+    return this.request("/api/setup/status");
+  }
+
+  async setup(username: string, password: string): Promise<{ user: AuthUser }> {
+    return this.request("/api/setup", {
+      method: "POST",
+      body: JSON.stringify({ username, password }),
+    });
+  }
+
+  async login(username: string, password: string): Promise<{ user: AuthUser }> {
+    return this.request("/api/auth/login", {
+      method: "POST",
+      body: JSON.stringify({ username, password }),
+    });
+  }
+
+  async logout(): Promise<void> {
+    await this.request<void>("/api/auth/logout", { method: "POST" });
+  }
+
+  async me(): Promise<{ user: AuthUser }> {
+    return this.request("/api/auth/me");
+  }
+
   // アプリケーション一覧取得
   async listApps(): Promise<ComposeApp[]> {
-    return this.request<ComposeApp[]>('/api/apps');
+    return this.request<ComposeApp[]>("/api/apps");
   }
 
   // アプリケーション起動
   async startApp(name: string): Promise<void> {
     await this.request(`/api/apps/${name}/start`, {
-      method: 'POST',
+      method: "POST",
     });
   }
 
   // アプリケーション停止
   async stopApp(name: string): Promise<void> {
     await this.request(`/api/apps/${name}/stop`, {
-      method: 'POST',
+      method: "POST",
     });
   }
 
   // アプリケーション再起動
   async restartApp(name: string): Promise<void> {
     await this.request(`/api/apps/${name}/restart`, {
-      method: 'POST',
+      method: "POST",
     });
   }
 
@@ -75,13 +116,13 @@ class ApiClient {
   // イメージプル
   async pullImages(name: string): Promise<void> {
     await this.request(`/api/apps/${name}/images/pull`, {
-      method: 'POST',
+      method: "POST",
     });
   }
 
   // ヘルスチェック
   async healthCheck(): Promise<{ status: string; service: string }> {
-    return this.request<{ status: string; service: string }>('/health');
+    return this.request<{ status: string; service: string }>("/health");
   }
 }
 

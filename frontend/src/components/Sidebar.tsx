@@ -1,13 +1,17 @@
+import { useCurrentUser, useLogout } from "../hooks/useAuth";
+
 interface SidebarProps {
   activeView: string;
   onViewChange: (view: string) => void;
 }
 
 export default function Sidebar({ activeView, onViewChange }: SidebarProps) {
+  const user = useCurrentUser();
+  const logout = useLogout();
   const navItems = [
-    { id: 'all', label: 'All Applications', icon: 'apps' },
-    { id: 'development', label: 'Development', icon: 'code' },
-    { id: 'production', label: 'Production', icon: 'cloud' },
+    { id: "all", label: "All Applications", icon: "apps" },
+    { id: "development", label: "Development", icon: "code" },
+    { id: "production", label: "Production", icon: "cloud" },
   ];
 
   return (
@@ -25,7 +29,7 @@ export default function Sidebar({ activeView, onViewChange }: SidebarProps) {
               Docker Manager
             </h1>
             <p className="text-gray-400 text-sm font-normal leading-normal">
-              user@email.com
+              {user.data?.username ?? "—"}
             </p>
           </div>
         </div>
@@ -37,20 +41,20 @@ export default function Sidebar({ activeView, onViewChange }: SidebarProps) {
               onClick={() => onViewChange(item.id)}
               className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors duration-150 ${
                 activeView === item.id
-                  ? 'bg-primary/20 text-primary'
-                  : 'hover:bg-white/5'
+                  ? "bg-primary/20 text-primary"
+                  : "hover:bg-white/5"
               }`}
             >
               <span
                 className={`material-symbols-outlined ${
-                  activeView === item.id ? 'text-white' : 'text-gray-400'
+                  activeView === item.id ? "text-white" : "text-gray-400"
                 }`}
               >
                 {item.icon}
               </span>
               <p
                 className={`text-sm font-medium leading-normal ${
-                  activeView === item.id ? 'text-white' : 'text-gray-300'
+                  activeView === item.id ? "text-white" : "text-gray-300"
                 }`}
               >
                 {item.label}
@@ -62,7 +66,7 @@ export default function Sidebar({ activeView, onViewChange }: SidebarProps) {
 
       <div className="flex flex-col gap-1">
         <button
-          onClick={() => onViewChange('settings')}
+          onClick={() => onViewChange("settings")}
           className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/5 transition-colors duration-150"
         >
           <span className="material-symbols-outlined text-gray-400">
@@ -70,6 +74,18 @@ export default function Sidebar({ activeView, onViewChange }: SidebarProps) {
           </span>
           <p className="text-gray-300 text-sm font-medium leading-normal">
             Settings
+          </p>
+        </button>
+        <button
+          onClick={() => logout.mutate()}
+          disabled={logout.isPending}
+          className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/5 transition-colors duration-150 disabled:opacity-50"
+        >
+          <span className="material-symbols-outlined text-gray-400">
+            logout
+          </span>
+          <p className="text-gray-300 text-sm font-medium leading-normal">
+            {logout.isPending ? "ログアウト中…" : "ログアウト"}
           </p>
         </button>
       </div>

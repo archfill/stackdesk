@@ -9,7 +9,7 @@ export interface Service {
 export interface ComposeApp {
   name: string;
   services: Service[];
-  status: 'running' | 'stopped' | 'error';
+  status: "running" | "stopped" | "error";
   lastDeployed?: string;
 }
 
@@ -26,4 +26,10 @@ export interface LogEntry {
   service: string;
   message: string;
   stream: string;
+}
+
+export interface AuthUser {
+  id: number;
+  username: string;
+  createdAt: number;
 }
