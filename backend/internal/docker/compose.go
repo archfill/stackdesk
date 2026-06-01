@@ -75,11 +75,14 @@ func (c *Client) ListComposeApps() ([]models.ComposeApp, error) {
 	return apps, nil
 }
 
-// StartComposeApp は Docker Compose アプリケーションを起動
-func (c *Client) StartComposeApp(projectName string) error {
-	containers, err := c.getProjectContainers(projectName)
+// StartComposeApp は Docker Compose アプリケーションを起動。service が空文字なら全サービス対象。
+func (c *Client) StartComposeApp(projectName, service string) error {
+	containers, err := c.getProjectContainers(projectName, service)
 	if err != nil {
 		return err
+	}
+	if len(containers) == 0 {
+		return fmt.Errorf("no containers found for project %q service %q", projectName, service)
 	}
 
 	for _, cont := range containers {
@@ -91,11 +94,14 @@ func (c *Client) StartComposeApp(projectName string) error {
 	return nil
 }
 
-// StopComposeApp は Docker Compose アプリケーションを停止
-func (c *Client) StopComposeApp(projectName string) error {
-	containers, err := c.getProjectContainers(projectName)
+// StopComposeApp は Docker Compose アプリケーションを停止。service が空文字なら全サービス対象。
+func (c *Client) StopComposeApp(projectName, service string) error {
+	containers, err := c.getProjectContainers(projectName, service)
 	if err != nil {
 		return err
+	}
+	if len(containers) == 0 {
+		return fmt.Errorf("no containers found for project %q service %q", projectName, service)
 	}
 
 	for _, cont := range containers {
@@ -108,11 +114,14 @@ func (c *Client) StopComposeApp(projectName string) error {
 	return nil
 }
 
-// RestartComposeApp は Docker Compose アプリケーションを再起動
-func (c *Client) RestartComposeApp(projectName string) error {
-	containers, err := c.getProjectContainers(projectName)
+// RestartComposeApp は Docker Compose アプリケーションを再起動。service が空文字なら全サービス対象。
+func (c *Client) RestartComposeApp(projectName, service string) error {
+	containers, err := c.getProjectContainers(projectName, service)
 	if err != nil {
 		return err
+	}
+	if len(containers) == 0 {
+		return fmt.Errorf("no containers found for project %q service %q", projectName, service)
 	}
 
 	for _, cont := range containers {
@@ -125,10 +134,13 @@ func (c *Client) RestartComposeApp(projectName string) error {
 	return nil
 }
 
-// getProjectContainers は指定されたプロジェクトのコンテナ一覧を取得
-func (c *Client) getProjectContainers(projectName string) ([]types.Container, error) {
+// getProjectContainers は指定されたプロジェクト（および任意で service）のコンテナ一覧を取得。
+func (c *Client) getProjectContainers(projectName, service string) ([]types.Container, error) {
 	filterArgs := filters.NewArgs()
 	filterArgs.Add("label", fmt.Sprintf("com.docker.compose.project=%s", projectName))
+	if service != "" {
+		filterArgs.Add("label", fmt.Sprintf("com.docker.compose.service=%s", service))
+	}
 
 	containers, err := c.cli.ContainerList(c.ctx, container.ListOptions{
 		All:     true,

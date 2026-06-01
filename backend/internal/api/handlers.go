@@ -41,7 +41,7 @@ func (h *Handler) ListApps(c *gin.Context) {
 func (h *Handler) StartApp(c *gin.Context) {
 	appName := c.Param("name")
 
-	if err := h.dockerClient.StartComposeApp(appName); err != nil {
+	if err := h.dockerClient.StartComposeApp(appName, ""); err != nil {
 		c.JSON(http.StatusInternalServerError, models.ErrorResponse{
 			Error:   "failed_to_start_app",
 			Message: err.Error(),
@@ -56,7 +56,7 @@ func (h *Handler) StartApp(c *gin.Context) {
 func (h *Handler) StopApp(c *gin.Context) {
 	appName := c.Param("name")
 
-	if err := h.dockerClient.StopComposeApp(appName); err != nil {
+	if err := h.dockerClient.StopComposeApp(appName, ""); err != nil {
 		c.JSON(http.StatusInternalServerError, models.ErrorResponse{
 			Error:   "failed_to_stop_app",
 			Message: err.Error(),
@@ -71,7 +71,7 @@ func (h *Handler) StopApp(c *gin.Context) {
 func (h *Handler) RestartApp(c *gin.Context) {
 	appName := c.Param("name")
 
-	if err := h.dockerClient.RestartComposeApp(appName); err != nil {
+	if err := h.dockerClient.RestartComposeApp(appName, ""); err != nil {
 		c.JSON(http.StatusInternalServerError, models.ErrorResponse{
 			Error:   "failed_to_restart_app",
 			Message: err.Error(),
@@ -180,7 +180,7 @@ func (h *Handler) PullImages(c *gin.Context) {
 // HealthCheck はヘルスチェック用エンドポイント
 func (h *Handler) HealthCheck(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
-		"status": "ok",
+		"status":  "ok",
 		"service": "docker-manager-api",
 	})
 }

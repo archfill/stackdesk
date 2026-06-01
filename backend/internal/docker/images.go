@@ -8,83 +8,101 @@ import (
 	"docker-manager/internal/models"
 
 	"github.com/docker/docker/api/types/image"
-	"github.com/docker/docker/api/types/registry"
 )
 
-// CheckImageUpdates はイメージの更新をチェック
+// CheckImageUpdates はイメージの更新有無を manifest digest 比較で判定する。
+//
+// ローカルでビルドされたイメージ（RepoDigests が空）はスキップする。
+// プライベートレジストリで認証エラーになった場合も skip して次のサービスへ進む
+// （MCP 経由で部分的にでも結果を返したいため）。
 func (c *Client) CheckImageUpdates(projectName string) ([]models.ImageUpdate, error) {
-	containers, err := c.getProjectContainers(projectName)
+	containers, err := c.getProjectContainers(projectName, "")
 	if err != nil {
 		return nil, err
+	}
+	if len(containers) == 0 {
+		return nil, fmt.Errorf("no containers found for project %q", projectName)
 	}
 
 	updates := []models.ImageUpdate{}
 
 	for _, cont := range containers {
-		imageName := cont.Image
+		imageRef := normalizeImageRef(cont.Image)
 
-		// ローカルイメージ情報を取得
-		localImages, err := c.cli.ImageList(c.ctx, image.ListOptions{})
-		if err != nil {
-			return nil, fmt.Errorf("failed to list local images: %w", err)
-		}
-
-		var localImageID string
-		for _, img := range localImages {
-			for _, tag := range img.RepoTags {
-				if tag == imageName {
-					localImageID = img.ID
-					break
-				}
-			}
-		}
-
-		// リモートイメージの最新情報を取得
-		hasUpdate, latestDigest, err := c.checkRemoteImageUpdate(imageName, localImageID)
-		if err != nil {
-			// エラーがあっても続行（プライベートレジストリなどでアクセスできない場合もある）
+		localDigest, hasLocal, err := c.localImageDigest(imageRef)
+		if err != nil || !hasLocal {
+			// ローカルにイメージが見つからない or digest 未付与 → スキップ。
 			continue
 		}
 
-		if hasUpdate {
-			updates = append(updates, models.ImageUpdate{
-				ServiceName:    cont.Labels["com.docker.compose.service"],
-				CurrentImage:   imageName,
-				CurrentDigest:  localImageID,
-				LatestDigest:   latestDigest,
-				UpdateRequired: true,
-			})
+		remote, err := c.cli.DistributionInspect(c.ctx, imageRef, "")
+		if err != nil {
+			// プライベートレジストリ等で取得不可 → スキップ。
+			continue
 		}
+		remoteDigest := string(remote.Descriptor.Digest)
+		if remoteDigest == "" {
+			continue
+		}
+
+		updates = append(updates, models.ImageUpdate{
+			ServiceName:    cont.Labels["com.docker.compose.service"],
+			CurrentImage:   imageRef,
+			CurrentDigest:  localDigest,
+			LatestDigest:   remoteDigest,
+			UpdateRequired: localDigest != remoteDigest,
+		})
 	}
 
 	return updates, nil
 }
 
-// checkRemoteImageUpdate はリモートイメージの更新をチェック
-func (c *Client) checkRemoteImageUpdate(imageName, localImageID string) (bool, string, error) {
-	// イメージ名からレジストリとリポジトリを分離
-	parts := strings.Split(imageName, ":")
-	imageRef := imageName
-	if len(parts) == 1 {
-		imageRef = imageName + ":latest"
+// normalizeImageRef は tag が省略されている場合 :latest を補う。
+func normalizeImageRef(imageName string) string {
+	// digest 指定 (image@sha256:...) はそのまま返す。
+	if strings.Contains(imageName, "@") {
+		return imageName
 	}
-
-	// リモートイメージの情報を取得
-	_, err := c.cli.DistributionInspect(c.ctx, imageRef, "")
-	if err != nil {
-		return false, "", fmt.Errorf("failed to inspect remote image: %w", err)
+	// repo:tag をパース。:latest がない場合に補完。
+	// レジストリのポートを含む `host:5000/foo` を tag と誤認しないよう、
+	// 最後のスラッシュ以降に `:` があるかで判断する。
+	lastSlash := strings.LastIndex(imageName, "/")
+	tail := imageName
+	if lastSlash >= 0 {
+		tail = imageName[lastSlash+1:]
 	}
-
-	// 簡易的な実装: イメージをプルして比較
-	// 本番環境では、よりスマートな方法（manifest比較など）を使用すべき
-	return false, "", nil
+	if !strings.Contains(tail, ":") {
+		return imageName + ":latest"
+	}
+	return imageName
 }
 
-// PullImages は指定されたプロジェクトのイメージをpull
+// localImageDigest はローカルにある imageRef の digest を返す。
+// 二番目の戻り値はローカルに存在し、かつ digest が取得できたかどうか。
+func (c *Client) localImageDigest(imageRef string) (string, bool, error) {
+	inspected, err := c.cli.ImageInspect(c.ctx, imageRef)
+	if err != nil {
+		return "", false, err
+	}
+	// RepoDigests は ["foo/bar@sha256:abcd..."] 形式。レジストリと一致する最初の digest を返す。
+	for _, rd := range inspected.RepoDigests {
+		at := strings.IndexByte(rd, '@')
+		if at < 0 {
+			continue
+		}
+		return rd[at+1:], true, nil
+	}
+	return "", false, nil
+}
+
+// PullImages は指定されたプロジェクトのイメージを pull する。
 func (c *Client) PullImages(projectName string) error {
-	containers, err := c.getProjectContainers(projectName)
+	containers, err := c.getProjectContainers(projectName, "")
 	if err != nil {
 		return err
+	}
+	if len(containers) == 0 {
+		return fmt.Errorf("no containers found for project %q", projectName)
 	}
 
 	for _, cont := range containers {
@@ -94,16 +112,16 @@ func (c *Client) PullImages(projectName string) error {
 		if err != nil {
 			return fmt.Errorf("failed to pull image %s: %w", imageName, err)
 		}
-		defer out.Close()
 
-		// プル結果を読み取る（進捗表示のため）
-		decoder := json.NewDecoder(out)
-		var status registry.DistributionInspect
-		for decoder.More() {
-			if err := decoder.Decode(&status); err != nil {
+		// プル結果のストリームを読み切る（プログレスメッセージを drain）。
+		dec := json.NewDecoder(out)
+		var msg map[string]any
+		for dec.More() {
+			if err := dec.Decode(&msg); err != nil {
 				break
 			}
 		}
+		_ = out.Close()
 	}
 
 	return nil
