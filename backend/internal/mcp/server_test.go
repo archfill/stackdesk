@@ -23,7 +23,7 @@ func newTestStore(t *testing.T) (*store.Store, int64) {
 	}
 	t.Cleanup(func() { _ = s.Close() })
 
-	u, err := s.Users.Create("alice", "$2a$10$placeholderHashThatBcryptCannotVerify")
+	u, err := s.Users.Create("alice", "$2a$10$placeholderHashThatBcryptCannotVerify", store.RoleAdmin)
 	if err != nil {
 		t.Fatalf("create user: %v", err)
 	}

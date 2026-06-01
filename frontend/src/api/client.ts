@@ -4,6 +4,7 @@ import type {
   ImageUpdate,
   MCPToken,
   MCPTokenCreated,
+  UserRole,
 } from "../types";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
@@ -97,6 +98,36 @@ class ApiClient {
 
   async revokeToken(id: number): Promise<void> {
     await this.request<void>(`/api/tokens/${id}`, { method: "DELETE" });
+  }
+
+  // ユーザー管理 (admin)
+  async listUsers(): Promise<{ users: AuthUser[] }> {
+    return this.request("/api/users");
+  }
+
+  async createUser(
+    username: string,
+    password: string,
+    role: UserRole,
+  ): Promise<{ user: AuthUser }> {
+    return this.request("/api/users", {
+      method: "POST",
+      body: JSON.stringify({ username, password, role }),
+    });
+  }
+
+  async updateUserRole(
+    id: number,
+    role: UserRole,
+  ): Promise<{ user: AuthUser }> {
+    return this.request(`/api/users/${id}/role`, {
+      method: "PATCH",
+      body: JSON.stringify({ role }),
+    });
+  }
+
+  async deleteUser(id: number): Promise<void> {
+    await this.request<void>(`/api/users/${id}`, { method: "DELETE" });
   }
 
   // アプリケーション一覧取得

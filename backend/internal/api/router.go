@@ -8,10 +8,19 @@ import (
 )
 
 // RegisterRoutes は API ルートを登録する。
-// authMW は /api/* （setup/auth 以外）に適用される認証ミドルウェア。/health は常に無認証。
-func RegisterRoutes(r *gin.Engine, dockerClient *docker.Client, st *store.Store, authMW gin.HandlerFunc) {
+// authMW は /api/* （setup/auth 以外）に適用される session 認証。
+// adminMW は admin 専用ルート（/api/users 系）に追加適用される認可ミドルウェア。
+// /health は常に無認証。
+func RegisterRoutes(
+	r *gin.Engine,
+	dockerClient *docker.Client,
+	st *store.Store,
+	authMW gin.HandlerFunc,
+	adminMW gin.HandlerFunc,
+) {
 	handler := NewHandler(dockerClient)
 	tokensHandler := NewTokensHandler(st)
+	usersHandler := NewUsersHandler(st)
 
 	// ヘルスチェック（無認証）
 	r.GET("/health", handler.HealthCheck)
@@ -36,5 +45,11 @@ func RegisterRoutes(r *gin.Engine, dockerClient *docker.Client, st *store.Store,
 
 		// MCP トークン管理
 		tokensHandler.RegisterTokenRoutes(api)
+	}
+
+	// admin 専用ルート（session 認証 + admin 認可）
+	adminAPI := r.Group("/api", authMW, adminMW)
+	{
+		usersHandler.RegisterUserRoutes(adminAPI)
 	}
 }

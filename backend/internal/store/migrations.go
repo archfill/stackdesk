@@ -43,6 +43,11 @@ CREATE TABLE IF NOT EXISTS mcp_tokens (
 CREATE INDEX IF NOT EXISTS idx_mcp_tokens_user_id    ON mcp_tokens(user_id);
 CREATE INDEX IF NOT EXISTS idx_mcp_tokens_token_hash ON mcp_tokens(token_hash);
 `,
+	`
+ALTER TABLE users ADD COLUMN role TEXT NOT NULL DEFAULT 'member';
+-- ロール導入前の既存ユーザーは初期管理者として admin に昇格させる。
+UPDATE users SET role = 'admin';
+`,
 }
 
 // migrate は schema_version を見て未適用のマイグレーションを順に実行する。

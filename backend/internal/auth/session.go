@@ -87,6 +87,26 @@ func CurrentUser(c *gin.Context) *store.User {
 	return u
 }
 
+// RequireAdmin は RequireUser の後段に置いて admin ロールのみ通すミドルウェア。
+// 認証チェックは RequireUser に任せる前提なので、CurrentUser が nil なら 401、admin でなければ 403。
+func (m *Manager) RequireAdmin() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		user := CurrentUser(c)
+		if user == nil {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+			return
+		}
+		if user.Role != store.RoleAdmin {
+			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{
+				"error":   "forbidden",
+				"message": "admin role required",
+			})
+			return
+		}
+		c.Next()
+	}
+}
+
 // resolveUser は cookie の session ID から user を取得する。
 func (m *Manager) resolveUser(c *gin.Context) (*store.User, error) {
 	id, err := c.Cookie(SessionCookieName)

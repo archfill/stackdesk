@@ -41,14 +41,18 @@ type credentialsRequest struct {
 type userResponse struct {
 	ID        int64  `json:"id"`
 	Username  string `json:"username"`
+	Role      string `json:"role"`
 	CreatedAt int64  `json:"createdAt"`
+	IsActive  bool   `json:"isActive"`
 }
 
 func toUserResponse(u *store.User) userResponse {
 	return userResponse{
 		ID:        u.ID,
 		Username:  u.Username,
+		Role:      string(u.Role),
 		CreatedAt: u.CreatedAt.Unix(),
+		IsActive:  u.IsActive,
 	}
 }
 
@@ -96,7 +100,7 @@ func (h *Handler) Setup(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal", "message": err.Error()})
 		return
 	}
-	user, err := h.store.Users.Create(username, hash)
+	user, err := h.store.Users.CreateAdmin(username, hash)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal", "message": err.Error()})
 		return

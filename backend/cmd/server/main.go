@@ -50,7 +50,7 @@ func main() {
 	}
 	r.Use(cors.New(cors.Config{
 		AllowOrigins:     allowedOrigins,
-		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "Authorization"},
 		ExposeHeaders:    []string{"Content-Length"},
 		AllowCredentials: true,
@@ -65,8 +65,8 @@ func main() {
 	authHandler := auth.NewHandler(st, authMgr)
 	authHandler.RegisterRoutes(r)
 
-	// 既存 API ルート（session 認証必須）
-	api.RegisterRoutes(r, dockerClient, st, authMgr.RequireUser())
+	// 既存 API ルート（session 認証必須）+ admin 専用ルート
+	api.RegisterRoutes(r, dockerClient, st, authMgr.RequireUser(), authMgr.RequireAdmin())
 
 	// MCP サーバを /mcp で公開。トークンは DB (mcp_tokens) で検証する。
 	mcpHandler := mcpserver.New(dockerClient, st)

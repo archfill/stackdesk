@@ -2,6 +2,7 @@ import Sidebar from "./components/Sidebar";
 import AppList from "./components/AppList";
 import AuthGate from "./components/AuthGate";
 import TokenManager from "./components/TokenManager";
+import UserManager from "./components/UserManager";
 import { useViewStore } from "./stores/useViewStore";
 
 function App() {
@@ -11,7 +12,13 @@ function App() {
     <AuthGate>
       <div className="flex min-h-screen bg-background-light dark:bg-background-dark text-gray-200">
         <Sidebar activeView={activeView} onViewChange={setActiveView} />
-        {activeView === "tokens" ? <TokenManager /> : <AppList />}
+        {activeView === "tokens" ? (
+          <TokenManager />
+        ) : activeView === "users" ? (
+          <UserManager />
+        ) : (
+          <AppList />
+        )}
       </div>
     </AuthGate>
   );

@@ -28,10 +28,14 @@ export interface LogEntry {
   stream: string;
 }
 
+export type UserRole = "admin" | "member";
+
 export interface AuthUser {
   id: number;
   username: string;
+  role: UserRole;
   createdAt: number;
+  isActive: boolean;
 }
 
 export interface MCPToken {

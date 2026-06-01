@@ -8,9 +8,11 @@ interface SidebarProps {
 export default function Sidebar({ activeView, onViewChange }: SidebarProps) {
   const user = useCurrentUser();
   const logout = useLogout();
+  const isAdmin = user.data?.role === "admin";
   const navItems = [
     { id: "all", label: "All Applications", icon: "apps" },
     { id: "tokens", label: "MCP Tokens", icon: "key" },
+    ...(isAdmin ? [{ id: "users", label: "Users", icon: "group" }] : []),
   ];
 
   return (
