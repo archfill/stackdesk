@@ -79,16 +79,21 @@ func readMultiplexedLogs(r io.Reader, service string, _ bool) ([]models.LogLine,
 
 	for {
 		header, err := br.Peek(8)
-		if err == io.EOF {
-			break
+		// バッファに何も無い かつ EOF → ストリーム終了。
+		if len(header) == 0 {
+			if err == nil || err == io.EOF {
+				break
+			}
+			return nil, err
 		}
-		if err != nil {
+		// Peek が EOF 以外のエラーを返したら中断。
+		if err != nil && err != io.EOF {
 			return nil, err
 		}
 
-		// 先頭バイトが 0/1/2 (stdin/stdout/stderr) なら multiplexed として処理。
-		// それ以外は素のテキストとして 1 行ずつ読む。
-		if header[0] <= 2 && header[1] == 0 && header[2] == 0 && header[3] == 0 {
+		// 8 バイト揃った上で先頭が stdcopy header の形式 (stream=0/1/2 と 3 byte 0 詰め) なら multiplexed。
+		// それ以外（短すぎる or 別の中身）は plain text として 1 行ずつ読む。
+		if len(header) >= 8 && header[0] <= 2 && header[1] == 0 && header[2] == 0 && header[3] == 0 {
 			stream := streamName(header[0])
 			length := int(uint32(header[4])<<24 | uint32(header[5])<<16 | uint32(header[6])<<8 | uint32(header[7]))
 			if _, err := br.Discard(8); err != nil {
