@@ -18,11 +18,26 @@ const (
 // IsValid は role 文字列が定義済みのいずれかであるかを返す。
 func (r Role) IsValid() bool { return r == RoleAdmin || r == RoleMember }
 
+// Language はサポートされるロケールコード。
+type Language string
+
+const (
+	LanguageEN Language = "en"
+	LanguageJA Language = "ja"
+)
+
+// DefaultLanguage は users.language の既定値（migration の DEFAULT と一致させる）。
+const DefaultLanguage = LanguageEN
+
+// IsValid は language 文字列がサポート対象かを返す。
+func (l Language) IsValid() bool { return l == LanguageEN || l == LanguageJA }
+
 // User はアプリケーションのユーザーを表す（password_hash は API レスポンス用には除外）。
 type User struct {
 	ID        int64
 	Username  string
 	Role      Role
+	Language  Language
 	CreatedAt time.Time
 	IsActive  bool
 }
@@ -58,8 +73,8 @@ func (r *UserRepo) Create(username, passwordHash string, role Role) (*User, erro
 	}
 	now := time.Now().Unix()
 	res, err := r.db.Exec(
-		`INSERT INTO users (username, password_hash, created_at, is_active, role) VALUES (?, ?, ?, 1, ?)`,
-		username, passwordHash, now, string(role),
+		`INSERT INTO users (username, password_hash, created_at, is_active, role, language) VALUES (?, ?, ?, 1, ?, ?)`,
+		username, passwordHash, now, string(role), string(DefaultLanguage),
 	)
 	if err != nil {
 		// modernc.org/sqlite は UNIQUE 制約違反を文字列で含むので簡易判定。
@@ -76,6 +91,7 @@ func (r *UserRepo) Create(username, passwordHash string, role Role) (*User, erro
 		ID:        id,
 		Username:  username,
 		Role:      role,
+		Language:  DefaultLanguage,
 		CreatedAt: time.Unix(now, 0),
 		IsActive:  true,
 	}, nil
@@ -89,7 +105,7 @@ func (r *UserRepo) CreateAdmin(username, passwordHash string) (*User, error) {
 // List は全ユーザーを取得する（admin の管理画面向け）。
 func (r *UserRepo) List() ([]*User, error) {
 	rows, err := r.db.Query(
-		`SELECT id, username, role, created_at, is_active FROM users ORDER BY id ASC`,
+		`SELECT id, username, role, language, created_at, is_active FROM users ORDER BY id ASC`,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("query users: %w", err)
@@ -113,7 +129,7 @@ func (r *UserRepo) List() ([]*User, error) {
 // GetByUsername は username（active のみ）でユーザーと password_hash を取得する。
 func (r *UserRepo) GetByUsername(username string) (*User, string, error) {
 	row := r.db.QueryRow(
-		`SELECT id, username, password_hash, role, created_at, is_active
+		`SELECT id, username, password_hash, role, language, created_at, is_active
 		 FROM users WHERE username = ? AND is_active = 1`,
 		username,
 	)
@@ -121,16 +137,18 @@ func (r *UserRepo) GetByUsername(username string) (*User, string, error) {
 		u        User
 		hash     string
 		role     string
+		language string
 		isActive int
 		created  int64
 	)
-	if err := row.Scan(&u.ID, &u.Username, &hash, &role, &created, &isActive); err != nil {
+	if err := row.Scan(&u.ID, &u.Username, &hash, &role, &language, &created, &isActive); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, "", ErrUserNotFound
 		}
 		return nil, "", fmt.Errorf("scan user: %w", err)
 	}
 	u.Role = Role(role)
+	u.Language = Language(language)
 	u.CreatedAt = time.Unix(created, 0)
 	u.IsActive = isActive == 1
 	return &u, hash, nil
@@ -139,11 +157,30 @@ func (r *UserRepo) GetByUsername(username string) (*User, string, error) {
 // GetByID は id でユーザーを取得する（session 復元用）。
 func (r *UserRepo) GetByID(id int64) (*User, error) {
 	row := r.db.QueryRow(
-		`SELECT id, username, role, created_at, is_active
+		`SELECT id, username, role, language, created_at, is_active
 		 FROM users WHERE id = ? AND is_active = 1`,
 		id,
 	)
 	return scanUserRow(row)
+}
+
+// UpdateLanguage は user の language を変更する。
+func (r *UserRepo) UpdateLanguage(id int64, lang Language) error {
+	if !lang.IsValid() {
+		return fmt.Errorf("invalid language: %q", lang)
+	}
+	res, err := r.db.Exec(`UPDATE users SET language = ? WHERE id = ?`, string(lang), id)
+	if err != nil {
+		return fmt.Errorf("update language: %w", err)
+	}
+	n, err := res.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("rows affected: %w", err)
+	}
+	if n == 0 {
+		return ErrUserNotFound
+	}
+	return nil
 }
 
 // UpdateRole は user の role を変更する。
@@ -198,16 +235,18 @@ func scanUserRow(row *sql.Row) (*User, error) {
 	var (
 		u        User
 		role     string
+		language string
 		isActive int
 		created  int64
 	)
-	if err := row.Scan(&u.ID, &u.Username, &role, &created, &isActive); err != nil {
+	if err := row.Scan(&u.ID, &u.Username, &role, &language, &created, &isActive); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, ErrUserNotFound
 		}
 		return nil, fmt.Errorf("scan user: %w", err)
 	}
 	u.Role = Role(role)
+	u.Language = Language(language)
 	u.CreatedAt = time.Unix(created, 0)
 	u.IsActive = isActive == 1
 	return &u, nil
@@ -218,13 +257,15 @@ func scanUser(rows *sql.Rows) (*User, error) {
 	var (
 		u        User
 		role     string
+		language string
 		isActive int
 		created  int64
 	)
-	if err := rows.Scan(&u.ID, &u.Username, &role, &created, &isActive); err != nil {
+	if err := rows.Scan(&u.ID, &u.Username, &role, &language, &created, &isActive); err != nil {
 		return nil, fmt.Errorf("scan user: %w", err)
 	}
 	u.Role = Role(role)
+	u.Language = Language(language)
 	u.CreatedAt = time.Unix(created, 0)
 	u.IsActive = isActive == 1
 	return &u, nil

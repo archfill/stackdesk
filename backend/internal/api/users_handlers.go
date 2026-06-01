@@ -34,6 +34,7 @@ type userResponse struct {
 	ID        int64  `json:"id"`
 	Username  string `json:"username"`
 	Role      string `json:"role"`
+	Language  string `json:"language"`
 	CreatedAt int64  `json:"createdAt"`
 	IsActive  bool   `json:"isActive"`
 }
@@ -43,6 +44,7 @@ func toUserResponse(u *store.User) userResponse {
 		ID:        u.ID,
 		Username:  u.Username,
 		Role:      string(u.Role),
+		Language:  string(u.Language),
 		CreatedAt: u.CreatedAt.Unix(),
 		IsActive:  u.IsActive,
 	}

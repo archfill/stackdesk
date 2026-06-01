@@ -29,6 +29,7 @@ func (h *Handler) RegisterRoutes(r *gin.Engine) {
 	r.POST("/api/auth/login", h.Login)
 	r.POST("/api/auth/logout", h.Logout)
 	r.GET("/api/auth/me", h.mgr.RequireUser(), h.Me)
+	r.PATCH("/api/auth/me/language", h.mgr.RequireUser(), h.UpdateMyLanguage)
 }
 
 // ---------------------- requests / responses ----------------------
@@ -42,6 +43,7 @@ type userResponse struct {
 	ID        int64  `json:"id"`
 	Username  string `json:"username"`
 	Role      string `json:"role"`
+	Language  string `json:"language"`
 	CreatedAt int64  `json:"createdAt"`
 	IsActive  bool   `json:"isActive"`
 }
@@ -51,6 +53,7 @@ func toUserResponse(u *store.User) userResponse {
 		ID:        u.ID,
 		Username:  u.Username,
 		Role:      string(u.Role),
+		Language:  string(u.Language),
 		CreatedAt: u.CreatedAt.Unix(),
 		IsActive:  u.IsActive,
 	}
@@ -153,4 +156,40 @@ func (h *Handler) Me(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"user": toUserResponse(user)})
+}
+
+// UpdateMyLanguage は PATCH /api/auth/me/language。
+// 自身のロケール設定を変更する。許可値: "en", "ja"。
+func (h *Handler) UpdateMyLanguage(c *gin.Context) {
+	user := CurrentUser(c)
+	if user == nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+	var req struct {
+		Language string `json:"language"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "bad_request", "message": "invalid json body"})
+		return
+	}
+	lang := store.Language(strings.TrimSpace(req.Language))
+	if !lang.IsValid() {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid_language", "message": "language must be one of: en, ja"})
+		return
+	}
+	if err := h.store.Users.UpdateLanguage(user.ID, lang); err != nil {
+		if errors.Is(err, store.ErrUserNotFound) {
+			c.JSON(http.StatusNotFound, gin.H{"error": "not_found"})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal", "message": err.Error()})
+		return
+	}
+	updated, err := h.store.Users.GetByID(user.ID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal", "message": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"user": toUserResponse(updated)})
 }

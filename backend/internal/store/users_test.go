@@ -145,6 +145,34 @@ func TestDeleteUser(t *testing.T) {
 	}
 }
 
+func TestUpdateLanguage(t *testing.T) {
+	s := openTestStore(t)
+	u, _ := s.Users.CreateAdmin("admin", "hash1")
+
+	if u.Language != DefaultLanguage {
+		t.Fatalf("new user language = %q, want %q", u.Language, DefaultLanguage)
+	}
+
+	if err := s.Users.UpdateLanguage(u.ID, LanguageJA); err != nil {
+		t.Fatalf("UpdateLanguage ja: %v", err)
+	}
+	got, err := s.Users.GetByID(u.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got.Language != LanguageJA {
+		t.Errorf("after update, language = %q, want %q", got.Language, LanguageJA)
+	}
+
+	if err := s.Users.UpdateLanguage(u.ID, Language("klingon")); err == nil {
+		t.Error("invalid language should be rejected")
+	}
+
+	if err := s.Users.UpdateLanguage(999, LanguageEN); !errors.Is(err, ErrUserNotFound) {
+		t.Errorf("unknown id err = %v, want ErrUserNotFound", err)
+	}
+}
+
 func TestDeleteCascadesSessionsAndTokens(t *testing.T) {
 	s := openTestStore(t)
 	u, _ := s.Users.CreateAdmin("admin", "hash1")

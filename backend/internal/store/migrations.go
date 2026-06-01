@@ -48,6 +48,9 @@ ALTER TABLE users ADD COLUMN role TEXT NOT NULL DEFAULT 'member';
 -- ロール導入前の既存ユーザーは初期管理者として admin に昇格させる。
 UPDATE users SET role = 'admin';
 `,
+	`
+ALTER TABLE users ADD COLUMN language TEXT NOT NULL DEFAULT 'en';
+`,
 }
 
 // migrate は schema_version を見て未適用のマイグレーションを順に実行する。
