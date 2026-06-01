@@ -65,8 +65,8 @@ func main() {
 	authHandler := auth.NewHandler(st, authMgr)
 	authHandler.RegisterRoutes(r)
 
-	// 既存 API ルート（Phase 2 で session middleware を適用予定）
-	api.RegisterRoutes(r, dockerClient)
+	// 既存 API ルート（session 認証必須）
+	api.RegisterRoutes(r, dockerClient, authMgr.RequireUser())
 
 	// MCP サーバを /mcp で公開。
 	// MCP_TOKEN 未設定なら fail-closed で起動失敗。

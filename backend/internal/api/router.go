@@ -6,15 +6,16 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// RegisterRoutes は API ルートを登録
-func RegisterRoutes(r *gin.Engine, dockerClient *docker.Client) {
+// RegisterRoutes は API ルートを登録する。
+// authMW は /api/apps/* に適用される認証ミドルウェア。/health は常に無認証。
+func RegisterRoutes(r *gin.Engine, dockerClient *docker.Client, authMW gin.HandlerFunc) {
 	handler := NewHandler(dockerClient)
 
-	// ヘルスチェック
+	// ヘルスチェック（無認証）
 	r.GET("/health", handler.HealthCheck)
 
-	// API グループ
-	api := r.Group("/api")
+	// API グループ（認証必須）
+	api := r.Group("/api", authMW)
 	{
 		// アプリケーション一覧
 		api.GET("/apps", handler.ListApps)
