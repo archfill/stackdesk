@@ -6,6 +6,7 @@ import (
 
 	"docker-manager/internal/api"
 	"docker-manager/internal/docker"
+	mcpserver "docker-manager/internal/mcp"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -33,6 +34,16 @@ func main() {
 
 	// API ルートの登録
 	api.RegisterRoutes(r, dockerClient)
+
+	// MCP サーバを /mcp で公開。
+	// MCP_TOKEN 未設定なら fail-closed で起動失敗。
+	mcpToken := os.Getenv("MCP_TOKEN")
+	if mcpToken == "" {
+		log.Fatal("MCP_TOKEN is not set; refusing to start with unauthenticated MCP endpoint")
+	}
+	mcpHandler := mcpserver.New(dockerClient, mcpToken)
+	r.Any("/mcp", gin.WrapH(mcpHandler))
+	r.Any("/mcp/*path", gin.WrapH(mcpHandler))
 
 	// サーバー起動
 	port := os.Getenv("PORT")

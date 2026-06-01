@@ -9,6 +9,7 @@ services:
     environment:
       - PORT=8080
       - GIN_MODE=debug
+      - MCP_TOKEN=${MCP_TOKEN:-dev-mcp-token}
     volumes:
       # ソースコードをマウント（ホットリロード用）
       - ./backend:/app
