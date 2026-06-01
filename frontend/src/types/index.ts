@@ -30,10 +30,13 @@ export interface LogEntry {
 
 export type UserRole = "admin" | "member";
 
+export type LanguageCode = "en" | "ja";
+
 export interface AuthUser {
   id: number;
   username: string;
   role: UserRole;
+  language: LanguageCode;
   createdAt: number;
   isActive: boolean;
 }

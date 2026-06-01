@@ -1,0 +1,17 @@
+{
+  "fallback": "Something went wrong. Please try again.",
+  "network": "Cannot reach the backend.",
+  "codes": {
+    "unauthorized": "Authentication required.",
+    "forbidden": "Admin role required.",
+    "invalid_credentials": "Invalid username or password.",
+    "username_taken": "That username is already taken.",
+    "last_admin": "Cannot demote or delete the last admin.",
+    "self_delete": "You cannot delete the currently signed-in user.",
+    "setup_already_done": "Setup has already been completed.",
+    "bad_request": "Invalid request.",
+    "not_found": "Not found.",
+    "invalid_language": "Language must be one of: en, ja.",
+    "internal": "Internal server error."
+  }
+}

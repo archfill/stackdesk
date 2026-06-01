@@ -84,6 +84,13 @@ class ApiClient {
     return this.request("/api/auth/me");
   }
 
+  async updateMyLanguage(language: string): Promise<{ user: AuthUser }> {
+    return this.request("/api/auth/me/language", {
+      method: "PATCH",
+      body: JSON.stringify({ language }),
+    });
+  }
+
   // MCP トークン管理
   async listTokens(): Promise<{ tokens: MCPToken[] }> {
     return this.request("/api/tokens");

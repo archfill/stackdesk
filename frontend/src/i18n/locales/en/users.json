@@ -1,0 +1,37 @@
+{
+  "title": "Users",
+  "summary": "<strong>{{admins}}</strong> admin · <strong>{{members}}</strong> member",
+  "blurb": "Administrators can sign in, manage other users, and issue their own MCP tokens. Members have container access but cannot reach this screen.",
+  "create": {
+    "title": "Add user",
+    "hint": "bcrypt · cost 10",
+    "username": "username",
+    "password": "password",
+    "role": "role",
+    "submit": "create",
+    "submitting": "creating…",
+    "errors": {
+      "passwordTooShort": "password must be at least 8 characters"
+    }
+  },
+  "list": {
+    "title": "Operators",
+    "columns": {
+      "id": "id",
+      "user": "user",
+      "role": "role",
+      "created": "created"
+    },
+    "you": "you",
+    "roles": {
+      "admin": "admin",
+      "member": "member"
+    },
+    "actions": {
+      "promote": "↑ admin",
+      "demote": "↓ member",
+      "delete": "delete",
+      "confirmDelete": "Delete {{username}}? Linked sessions and MCP tokens will also be removed."
+    }
+  }
+}

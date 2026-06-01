@@ -1,0 +1,33 @@
+{
+  "brand": {
+    "name": "docker-manager",
+    "tagline": "operator console"
+  },
+  "actions": {
+    "cancel": "キャンセル",
+    "close": "閉じる",
+    "copy": "コピー",
+    "copied": "コピー済み",
+    "create": "作成",
+    "delete": "削除",
+    "edit": "編集",
+    "retry": "再試行",
+    "save": "保存",
+    "back": "戻る",
+    "refresh": "更新",
+    "search": "検索"
+  },
+  "state": {
+    "loading": "読み込み中…",
+    "syncing": "同期中",
+    "connecting": "接続中…",
+    "noResults": "該当なし"
+  },
+  "language": {
+    "label": "言語",
+    "en": "EN",
+    "ja": "JA",
+    "english": "English",
+    "japanese": "日本語"
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "fallback": "エラーが発生しました。もう一度お試しください。",
+  "network": "バックエンドに接続できません。",
+  "codes": {
+    "unauthorized": "認証が必要です。",
+    "forbidden": "admin 権限が必要です。",
+    "invalid_credentials": "ユーザー名またはパスワードが正しくありません。",
+    "username_taken": "そのユーザー名は既に使われています。",
+    "last_admin": "最後の admin を降格・削除することはできません。",
+    "self_delete": "サインイン中のユーザー自身は削除できません。",
+    "setup_already_done": "初期セットアップは完了済みです。",
+    "bad_request": "リクエストの内容が不正です。",
+    "not_found": "対象が見つかりません。",
+    "invalid_language": "言語は en または ja のみ指定できます。",
+    "internal": "サーバ内部エラーが発生しました。"
+  }
+}

@@ -1,0 +1,97 @@
+{
+  "title": "アプリケーション",
+  "onHost_one": "{{count}} 件",
+  "onHost_other": "{{count}} 件",
+  "addApplication": "アプリ追加",
+  "filters": {
+    "all": "all",
+    "running": "running",
+    "stopped": "stopped",
+    "error": "error"
+  },
+  "search": {
+    "placeholder": "プロジェクト名でフィルタ…"
+  },
+  "table": {
+    "project": "project",
+    "status": "status",
+    "services": "services",
+    "lastDeployed": "last deployed",
+    "neverRecorded": "記録なし",
+    "noService": "—"
+  },
+  "indicators": {
+    "up": "up",
+    "down": "down",
+    "err": "err"
+  },
+  "empty": {
+    "connecting": {
+      "title": "接続中",
+      "subtitle": "docker ソケットから Compose プロジェクトを取得しています。"
+    },
+    "error": {
+      "title": "バックエンドに接続できません"
+    },
+    "noMatches": {
+      "title": "該当なし",
+      "subtitle": "フィルタや検索条件を調整してください。"
+    },
+    "noProjects": {
+      "title": "Compose プロジェクトがありません",
+      "subtitle": "このホストで docker compose プロジェクトを起動すると、ラベル経由で自動的に表示されます。"
+    },
+    "labelLookupHint": "compose lookup via labels"
+  },
+  "actions": {
+    "start": "起動",
+    "stop": "停止",
+    "restart": "再起動",
+    "logs": "ログ",
+    "updates": "更新"
+  },
+  "logs": {
+    "titlePrefix": "logs",
+    "polling": "polling · 3s",
+    "paused": "ストリーム停止中",
+    "lines": "行",
+    "autoscroll": "autoscroll",
+    "pause": "停止",
+    "resume": "再開",
+    "refresh": "再読込",
+    "states": {
+      "connecting": "コンテナ stdout に接続中…",
+      "empty": "ログがありません"
+    }
+  },
+  "updates": {
+    "titlePrefix": "image updates",
+    "recheck": "再チェック",
+    "pull": "イメージを pull",
+    "pulling": "pull 中…",
+    "pullSuccess": "イメージの pull が完了しました。再起動すると新しいイメージが反映されます。",
+    "pullFail": "イメージの pull に失敗しました: {{message}}",
+    "summary": {
+      "upToDate": "最新",
+      "updatable": "更新可能",
+      "blurb": "比較はレジストリの manifest digest に対して行います。リモートタグのないローカルビルドはスキップされます。"
+    },
+    "states": {
+      "inspecting": "レジストリの manifest を検査中…",
+      "current": {
+        "title": "すべて最新です",
+        "subtitle": "比較可能な manifest はローカルの digest と一致しています。ローカルビルドはここに表示されません。"
+      }
+    },
+    "diff": {
+      "title": "サービスごとの manifest 差分",
+      "local": "local",
+      "remote": "remote",
+      "updateAvailable": "更新あり",
+      "current": "最新"
+    }
+  },
+  "alerts": {
+    "actionFailed": "操作に失敗しました: {{message}}"
+  }
+}

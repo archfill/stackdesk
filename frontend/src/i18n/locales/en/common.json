@@ -1,0 +1,33 @@
+{
+  "brand": {
+    "name": "docker-manager",
+    "tagline": "operator console"
+  },
+  "actions": {
+    "cancel": "Cancel",
+    "close": "Close",
+    "copy": "Copy",
+    "copied": "Copied",
+    "create": "Create",
+    "delete": "Delete",
+    "edit": "Edit",
+    "retry": "Retry",
+    "save": "Save",
+    "back": "Back",
+    "refresh": "Refresh",
+    "search": "Search"
+  },
+  "state": {
+    "loading": "Loading…",
+    "syncing": "syncing",
+    "connecting": "connecting…",
+    "noResults": "No results"
+  },
+  "language": {
+    "label": "Language",
+    "en": "EN",
+    "ja": "JA",
+    "english": "English",
+    "japanese": "日本語"
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "title": "ユーザー",
+  "summary": "<strong>{{admins}}</strong> admin · <strong>{{members}}</strong> member",
+  "blurb": "管理者はサインインしてユーザー管理と MCP トークン発行を行えます。member はコンテナ操作までで、この画面には到達できません。",
+  "create": {
+    "title": "ユーザー追加",
+    "hint": "bcrypt · cost 10",
+    "username": "ユーザー名",
+    "password": "パスワード",
+    "role": "ロール",
+    "submit": "作成",
+    "submitting": "作成中…",
+    "errors": {
+      "passwordTooShort": "パスワードは 8 文字以上にしてください"
+    }
+  },
+  "list": {
+    "title": "オペレーター",
+    "columns": {
+      "id": "id",
+      "user": "user",
+      "role": "role",
+      "created": "created"
+    },
+    "you": "you",
+    "roles": {
+      "admin": "admin",
+      "member": "member"
+    },
+    "actions": {
+      "promote": "↑ admin",
+      "demote": "↓ member",
+      "delete": "削除",
+      "confirmDelete": "{{username}} を削除しますか？関連するセッションと MCP トークンも削除されます。"
+    }
+  }
+}

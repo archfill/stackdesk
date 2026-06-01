@@ -1,0 +1,97 @@
+{
+  "title": "Applications",
+  "onHost_one": "{{count}} on host",
+  "onHost_other": "{{count}} on host",
+  "addApplication": "Add application",
+  "filters": {
+    "all": "all",
+    "running": "running",
+    "stopped": "stopped",
+    "error": "error"
+  },
+  "search": {
+    "placeholder": "filter by project name…"
+  },
+  "table": {
+    "project": "project",
+    "status": "status",
+    "services": "services",
+    "lastDeployed": "last deployed",
+    "neverRecorded": "never recorded",
+    "noService": "—"
+  },
+  "indicators": {
+    "up": "up",
+    "down": "down",
+    "err": "err"
+  },
+  "empty": {
+    "connecting": {
+      "title": "connecting",
+      "subtitle": "Querying the docker socket for compose projects."
+    },
+    "error": {
+      "title": "Unable to reach the backend"
+    },
+    "noMatches": {
+      "title": "no matches",
+      "subtitle": "Adjust the filter or search to see more rows."
+    },
+    "noProjects": {
+      "title": "no compose projects",
+      "subtitle": "Start a docker compose project on this host — it will appear here automatically once labelled."
+    },
+    "labelLookupHint": "compose lookup via labels"
+  },
+  "actions": {
+    "start": "start",
+    "stop": "stop",
+    "restart": "restart",
+    "logs": "logs",
+    "updates": "updates"
+  },
+  "logs": {
+    "titlePrefix": "logs",
+    "polling": "polling · 3s",
+    "paused": "stream paused",
+    "lines": "lines",
+    "autoscroll": "autoscroll",
+    "pause": "pause",
+    "resume": "resume",
+    "refresh": "refresh",
+    "states": {
+      "connecting": "connecting to container stdout…",
+      "empty": "no log entries"
+    }
+  },
+  "updates": {
+    "titlePrefix": "image updates",
+    "recheck": "recheck",
+    "pull": "pull images",
+    "pulling": "pulling…",
+    "pullSuccess": "Images pulled successfully. Restart the application to use the new images.",
+    "pullFail": "Failed to pull images: {{message}}",
+    "summary": {
+      "upToDate": "up to date",
+      "updatable": "updatable",
+      "blurb": "Comparison runs against the registry manifest digest. Locally built images without a remote tag are skipped."
+    },
+    "states": {
+      "inspecting": "inspecting registry manifests…",
+      "current": {
+        "title": "everything is current",
+        "subtitle": "No comparable manifests differ from the local digest. Locally built images may not appear here."
+      }
+    },
+    "diff": {
+      "title": "Per-service manifest diff",
+      "local": "local",
+      "remote": "remote",
+      "updateAvailable": "update available",
+      "current": "current"
+    }
+  },
+  "alerts": {
+    "actionFailed": "Action failed: {{message}}"
+  }
+}
