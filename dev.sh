@@ -1,10 +1,10 @@
 #!/bin/bash
 
-# Docker Compose Manager - 開発環境起動スクリプト
+# StackDesk - 開発環境起動スクリプト
 
 set -e
 
-echo "🚀 Docker Compose Manager - 開発環境"
+echo "🚀 StackDesk - 開発環境"
 echo "======================================"
 echo ""
 

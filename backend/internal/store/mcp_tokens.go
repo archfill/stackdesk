@@ -15,7 +15,7 @@ import (
 var ErrTokenNotFound = errors.New("mcp token not found")
 
 // tokenPlaintextPrefix は発行する MCP トークンの先頭固定プレフィックス。
-const tokenPlaintextPrefix = "dmt_"
+const tokenPlaintextPrefix = "sdt_"
 
 // tokenPrefixLen は UI に表示するための先頭 N 文字（plaintext のうち）。
 const tokenPrefixLen = 12
@@ -175,7 +175,7 @@ func scanMCPToken(rows *sql.Rows) (*MCPToken, error) {
 	return &t, nil
 }
 
-// generateMCPToken は "dmt_" プレフィックス + 32 byte 乱数 base64url の文字列を返す。
+// generateMCPToken は "sdt_" プレフィックス + 32 byte 乱数 base64url の文字列を返す。
 func generateMCPToken() (string, error) {
 	buf := make([]byte, 32)
 	if _, err := rand.Read(buf); err != nil {

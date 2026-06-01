@@ -1,15 +1,17 @@
+name: stackdesk
+
 services:
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile.dev
-    container_name: docker-manager-backend-dev
+    container_name: stackdesk-backend-dev
     ports:
       - "8080:8080"
     environment:
       - PORT=8080
       - GIN_MODE=debug
-      - DB_PATH=/data/docker-manager.db
+      - DB_PATH=/data/stackdesk.db
       - CORS_ALLOWED_ORIGINS=${CORS_ALLOWED_ORIGINS:-http://localhost:5173,http://localhost:3000}
       - COOKIE_SECURE=${COOKIE_SECURE:-false}
     volumes:
@@ -20,9 +22,9 @@ services:
       # Go modulesキャッシュ（ビルド高速化）
       - go-modules:/go/pkg/mod
       # アプリケーションデータ（SQLite）
-      - dm-data:/data
+      - stackdesk-data:/data
     networks:
-      - docker-manager-network
+      - stackdesk-network
     command: ["air", "-c", ".air.toml"]
     restart: unless-stopped
 
@@ -30,7 +32,7 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile.dev
-    container_name: docker-manager-frontend-dev
+    container_name: stackdesk-frontend-dev
     ports:
       - "5173:5173"
     environment:
@@ -44,16 +46,16 @@ services:
       # node_modulesは名前付きボリュームで管理（ホストのnode_modulesと競合しないように）
       - node-modules:/app/node_modules
     networks:
-      - docker-manager-network
+      - stackdesk-network
     depends_on:
       - backend
     restart: unless-stopped
 
 networks:
-  docker-manager-network:
+  stackdesk-network:
     driver: bridge
 
 volumes:
   go-modules:
   node-modules:
-  dm-data:
+  stackdesk-data:

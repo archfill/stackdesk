@@ -1,9 +1,9 @@
 ---
-name: docker-manager-local
-description: Work with the local Docker Compose Manager development environment. Use when the user asks to run this repo locally, start or stop the dev server, check local execution settings, troubleshoot local ports or hot reload, inspect Docker Compose startup logs, or rebuild the Docker Manager dev stack.
+name: stackdesk-local
+description: Work with the local StackDesk development environment. Use when the user asks to run this repo locally, start or stop the dev server, check local execution settings, troubleshoot local ports or hot reload, inspect Docker Compose startup logs, or rebuild the StackDesk dev stack.
 ---
 
-# Docker Manager Local
+# StackDesk Local
 
 ## Purpose
 

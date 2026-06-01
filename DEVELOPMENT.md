@@ -159,10 +159,10 @@ docker compose -f docker-compose.dev.yml logs -f frontend
 
 ```bash
 # バックエンドコンテナ
-docker exec -it docker-manager-backend-dev sh
+docker exec -it stackdesk-backend-dev sh
 
 # フロントエンドコンテナ
-docker exec -it docker-manager-frontend-dev sh
+docker exec -it stackdesk-frontend-dev sh
 ```
 
 ## 📂 ディレクトリ構造とマウント
@@ -182,13 +182,13 @@ docker exec -it docker-manager-frontend-dev sh
 ### Go modules キャッシュ
 ```bash
 # キャッシュをクリア
-docker volume rm docker-manager_go-modules
+docker volume rm stackdesk_go-modules
 ```
 
 ### Node modules キャッシュ
 ```bash
 # キャッシュをクリア
-docker volume rm docker-manager_node-modules
+docker volume rm stackdesk_node-modules
 ```
 
 ## 🔍 トラブルシューティング

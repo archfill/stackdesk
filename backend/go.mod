@@ -1,4 +1,4 @@
-module docker-manager
+module github.com/archfill/stackdesk
 
 go 1.25.0
 

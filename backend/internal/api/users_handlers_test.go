@@ -7,8 +7,8 @@ import (
 	"strings"
 	"testing"
 
-	"docker-manager/internal/auth"
-	"docker-manager/internal/store"
+	"github.com/archfill/stackdesk/internal/auth"
+	"github.com/archfill/stackdesk/internal/store"
 
 	"github.com/gin-gonic/gin"
 )

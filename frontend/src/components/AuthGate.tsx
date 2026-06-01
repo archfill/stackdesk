@@ -95,7 +95,7 @@ function BrandingPane({ status }: { status: "login" | "setup" }) {
         <BrandMark />
         <div className="flex flex-col leading-none">
           <span className="font-display text-[15px] font-semibold tracking-tight text-[color:var(--color-text-0)]">
-            docker-manager
+            StackDesk
           </span>
           <span className="label-eyebrow mt-1.5">operator console</span>
         </div>

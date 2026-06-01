@@ -4,8 +4,8 @@ import (
 	"bufio"
 	"net/http"
 
-	"docker-manager/internal/docker"
-	"docker-manager/internal/models"
+	"github.com/archfill/stackdesk/internal/docker"
+	"github.com/archfill/stackdesk/internal/models"
 
 	"github.com/docker/docker/api/types/container"
 	"github.com/gin-gonic/gin"
@@ -181,6 +181,6 @@ func (h *Handler) PullImages(c *gin.Context) {
 func (h *Handler) HealthCheck(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"status":  "ok",
-		"service": "docker-manager-api",
+		"service": "stackdesk-api",
 	})
 }

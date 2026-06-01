@@ -1,8 +1,8 @@
 package api
 
 import (
-	"docker-manager/internal/docker"
-	"docker-manager/internal/store"
+	"github.com/archfill/stackdesk/internal/docker"
+	"github.com/archfill/stackdesk/internal/store"
 
 	"github.com/gin-gonic/gin"
 )

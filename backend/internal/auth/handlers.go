@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"strings"
 
-	"docker-manager/internal/store"
+	"github.com/archfill/stackdesk/internal/store"
 
 	"github.com/gin-gonic/gin"
 )

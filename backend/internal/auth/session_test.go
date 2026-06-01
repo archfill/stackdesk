@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"docker-manager/internal/store"
+	"github.com/archfill/stackdesk/internal/store"
 
 	"github.com/gin-gonic/gin"
 )
@@ -39,7 +39,7 @@ func newTestRouter(t *testing.T) (*gin.Engine, *store.Store, *Manager) {
 	return r, s, mgr
 }
 
-// extractSessionCookie pulls the dm_session cookie value out of a response.
+// extractSessionCookie pulls the stackdesk_session cookie value out of a response.
 func extractSessionCookie(t *testing.T, resp *http.Response) string {
 	t.Helper()
 	for _, c := range resp.Cookies() {
@@ -47,7 +47,7 @@ func extractSessionCookie(t *testing.T, resp *http.Response) string {
 			return c.Value
 		}
 	}
-	t.Fatal("dm_session cookie not set on response")
+	t.Fatal("stackdesk_session cookie not set on response")
 	return ""
 }
 

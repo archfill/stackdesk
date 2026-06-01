@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"docker-manager/internal/models"
+	"github.com/archfill/stackdesk/internal/models"
 
 	"github.com/docker/docker/api/types/image"
 )

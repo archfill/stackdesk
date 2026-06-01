@@ -34,7 +34,7 @@
 package main
 
 import (
-    "docker-manager/internal/config"
+    "github.com/archfill/stackdesk/internal/config"
     "log"
 )
 
@@ -67,7 +67,7 @@ export APP_LOG_FORMAT=json
 
 # データベース設定
 export APP_DATABASE_DRIVER=sqlite
-export APP_DATABASE_DSN=docker-manager.db
+export APP_DATABASE_DSN=stackdesk.db
 ```
 
 #### 設定ファイル (オプション)
@@ -87,7 +87,7 @@ log:
 
 database:
   driver: "sqlite"
-  dsn: "docker-manager.db"
+  dsn: "stackdesk.db"
 ```
 
 ---
@@ -157,7 +157,7 @@ Go用の開発者フレンドリーなORM。データベース操作を簡単に
 package main
 
 import (
-    "docker-manager/internal/database"
+    "github.com/archfill/stackdesk/internal/database"
 )
 
 // モデル定義

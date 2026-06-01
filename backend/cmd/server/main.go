@@ -7,11 +7,11 @@ import (
 	"path/filepath"
 	"strings"
 
-	"docker-manager/internal/api"
-	"docker-manager/internal/auth"
-	"docker-manager/internal/docker"
-	mcpserver "docker-manager/internal/mcp"
-	"docker-manager/internal/store"
+	"github.com/archfill/stackdesk/internal/api"
+	"github.com/archfill/stackdesk/internal/auth"
+	"github.com/archfill/stackdesk/internal/docker"
+	mcpserver "github.com/archfill/stackdesk/internal/mcp"
+	"github.com/archfill/stackdesk/internal/store"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -21,7 +21,7 @@ func main() {
 	// 永続化 (SQLite) の初期化
 	dbPath := os.Getenv("DB_PATH")
 	if dbPath == "" {
-		dbPath = "./data/docker-manager.db"
+		dbPath = "./data/stackdesk.db"
 	}
 	if err := os.MkdirAll(filepath.Dir(dbPath), 0o755); err != nil {
 		log.Fatalf("Failed to create data dir: %v", err)

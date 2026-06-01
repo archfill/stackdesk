@@ -1,4 +1,4 @@
-// Package mcp は docker-manager の MCP サーバを公開する。
+// Package mcp は stackdesk の MCP サーバを公開する。
 package mcp
 
 import (
@@ -8,15 +8,15 @@ import (
 	"strconv"
 	"time"
 
-	"docker-manager/internal/docker"
-	"docker-manager/internal/store"
+	"github.com/archfill/stackdesk/internal/docker"
+	"github.com/archfill/stackdesk/internal/store"
 
 	"github.com/modelcontextprotocol/go-sdk/auth"
 	mcpsdk "github.com/modelcontextprotocol/go-sdk/mcp"
 )
 
 const (
-	implementationName    = "docker-manager"
+	implementationName    = "stackdesk"
 	implementationVersion = "0.1.0"
 	requiredScope         = "docker"
 )

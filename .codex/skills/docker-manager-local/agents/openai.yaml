@@ -1,4 +1,0 @@
-interface:
-  display_name: "Docker Manager Local"
-  short_description: "Docker Manager のローカル開発環境を操作"
-  default_prompt: "Use $docker-manager-local to work with the local Docker Manager development environment."

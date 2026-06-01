@@ -5,7 +5,7 @@ import (
 	"sort"
 	"strings"
 
-	"docker-manager/internal/models"
+	"github.com/archfill/stackdesk/internal/models"
 )
 
 // InspectApp は指定プロジェクトの services を inspect して詳細を集約する。

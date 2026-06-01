@@ -3,7 +3,7 @@ package docker
 import (
 	"fmt"
 
-	"docker-manager/internal/models"
+	"github.com/archfill/stackdesk/internal/models"
 
 	"github.com/docker/docker/api/types"
 )

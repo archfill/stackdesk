@@ -14,8 +14,8 @@ func TestMCPTokenCreateAndVerify(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Create: %v", err)
 	}
-	if !strings.HasPrefix(plain, "dmt_") {
-		t.Errorf("plaintext = %q; expected dmt_ prefix", plain)
+	if !strings.HasPrefix(plain, "sdt_") {
+		t.Errorf("plaintext = %q; expected sdt_ prefix", plain)
 	}
 	if tok.Prefix == "" || !strings.HasPrefix(plain, tok.Prefix) {
 		t.Errorf("Prefix = %q must be a prefix of plaintext", tok.Prefix)
@@ -34,7 +34,7 @@ func TestMCPTokenUnknownAndRevoked(t *testing.T) {
 	s := openTestStore(t)
 	u, _ := s.Users.CreateAdmin("admin", "hash")
 
-	if _, err := s.MCPTokens.VerifyPlaintext("dmt_unknown"); !errors.Is(err, ErrTokenNotFound) {
+	if _, err := s.MCPTokens.VerifyPlaintext("sdt_unknown"); !errors.Is(err, ErrTokenNotFound) {
 		t.Errorf("unknown token err = %v, want ErrTokenNotFound", err)
 	}
 

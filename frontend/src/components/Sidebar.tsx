@@ -69,7 +69,7 @@ export default function Sidebar({ activeView, onViewChange }: SidebarProps) {
         <BrandGlyph />
         <div className="flex flex-col leading-none">
           <span className="font-display text-[13px] font-semibold tracking-tight text-[color:var(--color-text-0)]">
-            docker-manager
+            StackDesk
           </span>
           <span className="mt-1 font-mono text-[9.5px] uppercase tracking-[0.16em] text-[color:var(--color-text-3)]">
             operator console

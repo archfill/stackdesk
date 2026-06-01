@@ -5,13 +5,13 @@ import (
 	"net/http"
 	"time"
 
-	"docker-manager/internal/store"
+	"github.com/archfill/stackdesk/internal/store"
 
 	"github.com/gin-gonic/gin"
 )
 
 // SessionCookieName は session ID を載せる cookie 名。
-const SessionCookieName = "dm_session"
+const SessionCookieName = "stackdesk_session"
 
 // DefaultSessionTTL は session の有効期間（7 日）。
 const DefaultSessionTTL = 7 * 24 * time.Hour

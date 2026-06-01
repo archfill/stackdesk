@@ -5,13 +5,13 @@ import (
 	"fmt"
 	"strings"
 
-	"docker-manager/internal/docker"
-	"docker-manager/internal/models"
+	"github.com/archfill/stackdesk/internal/docker"
+	"github.com/archfill/stackdesk/internal/models"
 
 	mcpsdk "github.com/modelcontextprotocol/go-sdk/mcp"
 )
 
-// registerTools は docker-manager の MCP tool を server に登録する。
+// registerTools は stackdesk の MCP tool を server に登録する。
 func registerTools(server *mcpsdk.Server, dc *docker.Client) {
 	registerListApps(server, dc)
 	registerInspectApp(server, dc)

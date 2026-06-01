@@ -1,4 +1,4 @@
-# Docker Compose App Manager - プロジェクト解析結果
+# StackDesk - プロジェクト解析結果
 
 ## プロジェクト概要
 
@@ -7,7 +7,7 @@ Docker Compose アプリケーションを管理するための Web インター
 ## ディレクトリ構造
 
 ```
-/opt/docker/docker-manager/
+/opt/docker/stackdesk/
 ├── .git/                                          # Git リポジトリ
 └── stitch_docker_compose_app_manager/
     └── docker_compose_app_manager/
@@ -19,7 +19,7 @@ Docker Compose アプリケーションを管理するための Web インター
 ## 主要ファイル
 
 ### code.html (13,027 bytes)
-- Docker Compose Manager UI を実装した完全な単一ファイル HTML アプリケーション
+- StackDesk UI を実装した完全な単一ファイル HTML アプリケーション
 - HTML、CSS、JavaScript（Tailwind CDN 経由）を組み込み
 - そのまま提供可能な自己完結型 Web アプリケーション
 
@@ -131,4 +131,4 @@ Docker Compose アプリケーションを管理するための Web インター
 ---
 
 **解析日**: 2025-10-25
-**プロジェクトパス**: `/opt/docker/docker-manager`
+**プロジェクトパス**: `/opt/docker/stackdesk`

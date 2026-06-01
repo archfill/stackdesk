@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"docker-manager/internal/store"
+	"github.com/archfill/stackdesk/internal/store"
 
 	"github.com/modelcontextprotocol/go-sdk/auth"
 )
@@ -55,7 +55,7 @@ func TestStoreTokenVerifier(t *testing.T) {
 	})
 
 	t.Run("unknown token", func(t *testing.T) {
-		_, err := verify(context.Background(), "dmt_unknown", nil)
+		_, err := verify(context.Background(), "sdt_unknown", nil)
 		if !errors.Is(err, auth.ErrInvalidToken) {
 			t.Errorf("err = %v, want ErrInvalidToken", err)
 		}
@@ -98,7 +98,7 @@ func TestNewMCPAuth(t *testing.T) {
 	}{
 		{"no header", "", http.StatusUnauthorized},
 		{"wrong scheme", "Token " + plaintext, http.StatusUnauthorized},
-		{"wrong token", "Bearer dmt_wrong", http.StatusUnauthorized},
+		{"wrong token", "Bearer sdt_wrong", http.StatusUnauthorized},
 		{"correct token", "Bearer " + plaintext, http.StatusOK},
 	}
 	for _, tc := range cases {

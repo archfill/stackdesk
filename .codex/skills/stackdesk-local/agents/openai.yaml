@@ -1,0 +1,4 @@
+interface:
+  display_name: "StackDesk Local"
+  short_description: "StackDesk のローカル開発環境を操作"
+  default_prompt: "Use $stackdesk-local to work with the local StackDesk development environment."
