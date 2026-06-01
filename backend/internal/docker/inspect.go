@@ -91,16 +91,39 @@ func (c *Client) InspectApp(projectName string) (*models.InspectedApp, error) {
 	return app, nil
 }
 
+// secretEnvKeyPatterns はマスク対象の env キー名に含まれる部分文字列（大文字比較）。
+// LLM/MCP クライアントへ秘密情報を露出させないため inspect_app の出力で値を伏せる。
+var secretEnvKeyPatterns = []string{
+	"TOKEN", "SECRET", "PASSWORD", "PASSWD", "KEY", "CREDENTIAL", "AUTH",
+}
+
 // parseEnv は ["K=V"] 形式の env スライスを map に変換する。
+// 秘密と思われる key の値は "[REDACTED]" に置き換える。
 func parseEnv(env []string) map[string]string {
 	out := make(map[string]string, len(env))
 	for _, kv := range env {
 		i := strings.IndexByte(kv, '=')
+		var key, val string
 		if i < 0 {
-			out[kv] = ""
-			continue
+			key, val = kv, ""
+		} else {
+			key, val = kv[:i], kv[i+1:]
 		}
-		out[kv[:i]] = kv[i+1:]
+		if val != "" && isSecretEnvKey(key) {
+			val = "[REDACTED]"
+		}
+		out[key] = val
 	}
 	return out
+}
+
+// isSecretEnvKey は key 名が secret パターンに合致するかを大文字一致で判定する。
+func isSecretEnvKey(key string) bool {
+	upper := strings.ToUpper(key)
+	for _, pat := range secretEnvKeyPatterns {
+		if strings.Contains(upper, pat) {
+			return true
+		}
+	}
+	return false
 }
