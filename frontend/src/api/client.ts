@@ -39,14 +39,20 @@ class ApiClient {
       if (!response.ok) {
         const text = await response.text();
         let message = "API request failed";
+        let code: string | undefined;
         try {
           const parsed = JSON.parse(text);
+          if (typeof parsed.error === "string") code = parsed.error;
           message = parsed.message || parsed.error || message;
         } catch {
           message = text || message;
         }
-        const err = new Error(message) as Error & { status?: number };
+        const err = new Error(message) as Error & {
+          status?: number;
+          code?: string;
+        };
         err.status = response.status;
+        err.code = code;
         throw err;
       }
 

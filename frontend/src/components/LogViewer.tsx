@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import { ArrowLeft, Pause, Play, RotateCw, Terminal } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 import { apiClient } from "../api/client";
 import { Button } from "./ui/button";
 import { cn } from "../lib/utils";
+import { translateError } from "../lib/translateError";
 
 interface LogViewerProps {
   appName: string;
@@ -11,9 +13,11 @@ interface LogViewerProps {
 }
 
 export default function LogViewer({ appName, onClose }: LogViewerProps) {
+  const { t } = useTranslation("apps");
+  const { t: tErr } = useTranslation("errors");
   const [logs, setLogs] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<unknown>(null);
   const [autoscroll, setAutoscroll] = useState(true);
   const [paused, setPaused] = useState(false);
   const bodyRef = useRef<HTMLDivElement>(null);
@@ -25,7 +29,7 @@ export default function LogViewer({ appName, onClose }: LogViewerProps) {
       const data = await apiClient.getLogs(appName);
       setLogs(data.logs || []);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to fetch logs");
+      setError(err);
     } finally {
       setIsLoading(false);
     }
@@ -48,7 +52,12 @@ export default function LogViewer({ appName, onClose }: LogViewerProps) {
     <main className="flex flex-1 flex-col">
       <header className="flex items-center justify-between gap-4 border-b border-[color:var(--color-rule)] bg-[color:var(--color-ink-0)]/80 px-8 py-4 backdrop-blur-sm">
         <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" onClick={onClose} title="Back">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onClose}
+            title={t("logs.refresh")}
+          >
             <ArrowLeft className="size-[15px]" strokeWidth={1.6} />
           </Button>
           <div className="flex items-center gap-2">
@@ -57,7 +66,7 @@ export default function LogViewer({ appName, onClose }: LogViewerProps) {
               strokeWidth={1.6}
             />
             <h1 className="font-display text-[18px] font-semibold leading-none tracking-[-0.02em] text-[color:var(--color-text-0)]">
-              logs
+              {t("logs.titlePrefix")}
               <span className="text-[color:var(--color-text-3)]"> · </span>
               <span className="font-mono text-[14px] font-medium text-[color:var(--color-text-2)]">
                 {appName}
@@ -75,7 +84,7 @@ export default function LogViewer({ appName, onClose }: LogViewerProps) {
               onChange={(e) => setAutoscroll(e.target.checked)}
             />
             <span className="font-mono uppercase tracking-[0.1em]">
-              autoscroll
+              {t("logs.autoscroll")}
             </span>
           </label>
           <Button
@@ -86,12 +95,12 @@ export default function LogViewer({ appName, onClose }: LogViewerProps) {
             {paused ? (
               <>
                 <Play className="size-[13px]" strokeWidth={1.7} />
-                resume
+                {t("logs.resume")}
               </>
             ) : (
               <>
                 <Pause className="size-[13px]" strokeWidth={1.7} />
-                pause
+                {t("logs.pause")}
               </>
             )}
           </Button>
@@ -100,7 +109,7 @@ export default function LogViewer({ appName, onClose }: LogViewerProps) {
               className={cn("size-[13px]", isLoading && "animate-spin")}
               strokeWidth={1.7}
             />
-            refresh
+            {t("logs.refresh")}
           </Button>
         </div>
       </header>
@@ -110,13 +119,13 @@ export default function LogViewer({ appName, onClose }: LogViewerProps) {
           <header className="flex items-center justify-between border-b border-[color:var(--color-rule)] bg-[color:var(--color-ink-1)] px-4 py-2">
             <div className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.14em] text-[color:var(--color-text-3)]">
               <span className={cn("status-dot", paused ? "down" : "up")} />
-              <span>{paused ? "stream paused" : "polling · 3s"}</span>
+              <span>{paused ? t("logs.paused") : t("logs.polling")}</span>
             </div>
             <span className="label-eyebrow">
               <span className="num text-[color:var(--color-text-1)]">
                 {logs.length}
               </span>{" "}
-              lines
+              {t("logs.lines")}
             </span>
           </header>
 
@@ -130,15 +139,15 @@ export default function LogViewer({ appName, onClose }: LogViewerProps) {
           >
             {isLoading && logs.length === 0 ? (
               <p className="px-4 py-3 text-[color:var(--color-text-3)]">
-                connecting to container stdout…
+                {t("logs.states.connecting")}
               </p>
             ) : error ? (
               <p className="px-4 py-3 text-[color:var(--color-err)]">
-                ▶ {error}
+                ▶ {translateError(error, tErr)}
               </p>
             ) : logs.length === 0 ? (
               <p className="px-4 py-3 text-[color:var(--color-text-3)]">
-                no log entries
+                {t("logs.states.empty")}
               </p>
             ) : (
               logs.map((log, idx) => (

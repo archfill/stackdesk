@@ -1,19 +1,23 @@
+import { Trans, useTranslation } from "react-i18next";
+
 import { useCurrentUser, useSetupStatus } from "../hooks/useAuth";
 import LoginForm from "./LoginForm";
 import SetupWizard from "./SetupWizard";
+import { LanguageToggle } from "./ui/LanguageToggle";
 
 interface AuthGateProps {
   children: React.ReactNode;
 }
 
 export default function AuthGate({ children }: AuthGateProps) {
+  const { t } = useTranslation("common");
   const user = useCurrentUser();
   const setupStatus = useSetupStatus();
 
   if (user.isLoading || setupStatus.isLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <span className="label-eyebrow">connecting…</span>
+        <span className="label-eyebrow">{t("state.connecting")}</span>
       </div>
     );
   }
@@ -25,8 +29,6 @@ export default function AuthGate({ children }: AuthGateProps) {
 
 /**
  * AuthShell — split-pane chrome shared by Login and Setup screens.
- * Left panel is a black branding column with a faux operator readout;
- * right panel is the form. Collapses to single column under 900px.
  */
 export function AuthShell({
   title,
@@ -41,17 +43,19 @@ export function AuthShell({
   status?: "login" | "setup";
   children: React.ReactNode;
 }) {
+  const { t } = useTranslation("auth");
+  const stepKey = status === "setup" ? "shell.stepSetup" : "shell.stepLogin";
+
   return (
     <div className="grid min-h-screen grid-cols-1 lg:grid-cols-[1.1fr_1fr]">
       <BrandingPane status={status ?? "login"} />
-      <section className="flex items-center justify-center px-6 py-12 lg:px-16">
+      <section className="relative flex items-center justify-center px-6 py-12 lg:px-16">
+        <div className="absolute right-6 top-6 lg:right-12 lg:top-10">
+          <LanguageToggle />
+        </div>
         <div className="w-full max-w-[380px]">
           <div className="reveal delay-1 mb-1 flex items-center gap-2">
-            <span className="label-eyebrow">
-              {status === "setup"
-                ? "step 01 · bootstrap"
-                : "step 01 · authenticate"}
-            </span>
+            <span className="label-eyebrow">{t(stepKey)}</span>
           </div>
           <h1 className="reveal delay-2 font-display text-[26px] font-semibold leading-[1.15] tracking-[-0.02em] text-[color:var(--color-text-0)]">
             {title}
@@ -72,9 +76,9 @@ export function AuthShell({
 }
 
 function BrandingPane({ status }: { status: "login" | "setup" }) {
+  const { t } = useTranslation("auth");
   return (
     <aside className="terminal-bg relative hidden flex-col justify-between overflow-hidden border-r border-[color:var(--color-rule)] bg-[color:var(--color-ink-0)] px-12 py-12 lg:flex">
-      {/* ascii crosshair watermark */}
       <pre
         aria-hidden
         className="pointer-events-none absolute -right-24 -top-24 select-none font-mono text-[8px] leading-[10px] text-[color:var(--color-rule-bright)] opacity-50"
@@ -101,34 +105,41 @@ function BrandingPane({ status }: { status: "login" | "setup" }) {
         <div className="reveal delay-2 mb-6 flex items-center gap-2">
           <span className="status-dot up" />
           <span className="font-mono text-[11px] uppercase tracking-[0.14em] text-[color:var(--color-text-2)]">
-            host link · ready
+            {t("shell.hostLinkReady")}
           </span>
         </div>
         <h2 className="reveal delay-3 max-w-[20ch] font-display text-[44px] font-semibold leading-[1.02] tracking-[-0.03em] text-[color:var(--color-text-0)]">
-          control your{" "}
-          <span className="text-[color:var(--color-acid)]">stack</span>
-          <br />
-          without the terminal.
+          <Trans
+            i18nKey="shell.headlineLogin"
+            t={t}
+            components={{
+              accent: <span className="text-[color:var(--color-acid)]" />,
+              br: <br />,
+            }}
+          />
         </h2>
         <p className="reveal delay-4 mt-5 max-w-[36ch] text-[13.5px] leading-relaxed text-[color:var(--color-text-2)]">
-          Inspect, restart and update every compose project on this host —
-          locally or over MCP — from a single dense panel.
+          {t("shell.blurb")}
         </p>
 
-        <div className="reveal delay-5 mt-10 grid grid-cols-3 gap-3 max-w-[420px]">
-          {[
-            { label: "compose projects", value: "via labels" },
-            { label: "mcp", value: "/mcp · bearer" },
-            { label: "auth", value: "session + role" },
-          ].map((m) => (
+        <div className="reveal delay-5 mt-10 grid max-w-[420px] grid-cols-3 gap-3">
+          {(
+            [
+              ["composeProjects", "composeProjectsValue"],
+              ["mcp", "mcpValue"],
+              ["auth", "authValue"],
+            ] as const
+          ).map(([labelKey, valueKey]) => (
             <div
-              key={m.label}
+              key={labelKey}
               className="surface px-3 py-3"
               style={{ borderRadius: 4 }}
             >
-              <div className="label-eyebrow">{m.label}</div>
+              <div className="label-eyebrow">
+                {t(`shell.facts.${labelKey}`)}
+              </div>
               <div className="mt-1 font-mono text-[11.5px] text-[color:var(--color-text-1)]">
-                {m.value}
+                {t(`shell.facts.${valueKey}`)}
               </div>
             </div>
           ))}
@@ -137,12 +148,10 @@ function BrandingPane({ status }: { status: "login" | "setup" }) {
 
       <footer className="relative z-10 flex items-end justify-between">
         <div className="font-mono text-[10.5px] uppercase tracking-[0.16em] text-[color:var(--color-text-3)]">
-          {status === "setup"
-            ? "// no users on host — bootstrap required"
-            : "// awaiting credentials"}
+          {status === "setup" ? t("shell.footerSetup") : t("shell.footerLogin")}
         </div>
         <div className="font-mono text-[10.5px] uppercase tracking-[0.16em] text-[color:var(--color-text-3)]">
-          v0.1.0 · build {buildShortHash()}
+          {t("shell.build", { hash: buildShortHash() })}
         </div>
       </footer>
     </aside>
@@ -150,7 +159,6 @@ function BrandingPane({ status }: { status: "login" | "setup" }) {
 }
 
 function BrandMark() {
-  // square mark — concentric square hairline forming a hatched glyph
   return (
     <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
       <rect
@@ -180,8 +188,6 @@ function BrandMark() {
 }
 
 function buildShortHash() {
-  // playful (and deterministic-ish) build sigil so the corner doesn't read
-  // as a real commit reference. Random per page load.
   const chars = "abcdef0123456789";
   let s = "";
   for (let i = 0; i < 7; i++)

@@ -1,7 +1,6 @@
 {
   "title": "Applications",
-  "onHost_one": "{{count}} on host",
-  "onHost_other": "{{count}} on host",
+  "onHost": "on host",
   "addApplication": "Add application",
   "filters": {
     "all": "all",

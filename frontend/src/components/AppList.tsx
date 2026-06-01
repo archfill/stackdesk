@@ -7,30 +7,30 @@ import {
   TriangleAlert,
   Wifi,
 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 import { apiClient } from "../api/client";
 import type { ComposeApp } from "../types";
 import { Button } from "./ui/button";
 import { cn } from "../lib/utils";
+import { translateError } from "../lib/translateError";
 import AppCard from "./AppCard";
 import LogViewer from "./LogViewer";
 import UpdateChecker from "./UpdateChecker";
 
 type StatusFilter = "all" | "running" | "stopped" | "error";
 
-const FILTERS: { id: StatusFilter; label: string }[] = [
-  { id: "all", label: "all" },
-  { id: "running", label: "running" },
-  { id: "stopped", label: "stopped" },
-  { id: "error", label: "error" },
-];
+const FILTERS: StatusFilter[] = ["all", "running", "stopped", "error"];
 
 export default function AppList() {
+  const { t } = useTranslation("apps");
+  const { t: tErr } = useTranslation("errors");
+  const { t: tCommon } = useTranslation("common");
   const [apps, setApps] = useState<ComposeApp[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<unknown>(null);
   const [selectedAppForLogs, setSelectedAppForLogs] = useState<string | null>(
     null,
   );
@@ -45,9 +45,7 @@ export default function AppList() {
       const data = await apiClient.listApps();
       setApps(data || []);
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Failed to fetch applications",
-      );
+      setError(err);
     } finally {
       setIsLoading(false);
     }
@@ -100,38 +98,43 @@ export default function AppList() {
 
   return (
     <main className="flex flex-1 flex-col">
-      {/* topbar */}
       <header className="flex items-center justify-between gap-4 border-b border-[color:var(--color-rule)] bg-[color:var(--color-ink-0)]/80 px-8 py-4 backdrop-blur-sm">
         <div className="flex items-baseline gap-3">
           <h1 className="font-display text-[22px] font-semibold leading-none tracking-[-0.02em] text-[color:var(--color-text-0)]">
-            Applications
+            {t("title")}
           </h1>
           <span className="label-eyebrow">
             <span className="num text-[color:var(--color-text-2)]">
               {counts.all.toString().padStart(2, "0")}
             </span>{" "}
-            on host
+            {t("onHost")}
           </span>
         </div>
 
         <div className="flex items-center gap-2">
-          <StatusPulse counts={counts} />
+          <StatusPulse
+            counts={counts}
+            labels={{
+              up: t("indicators.up"),
+              down: t("indicators.down"),
+              err: t("indicators.err"),
+            }}
+          />
           <Button variant="neutral" size="md">
             <Plus className="size-[14px]" strokeWidth={1.75} />
-            <span>Add application</span>
+            <span>{t("addApplication")}</span>
           </Button>
         </div>
       </header>
 
-      {/* filter bar */}
       <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[color:var(--color-rule)] px-8 py-3">
         <div className="flex items-center gap-1.5 rounded-[3px] border border-[color:var(--color-rule)] bg-[color:var(--color-ink-1)] p-0.5">
-          {FILTERS.map((f) => {
-            const active = statusFilter === f.id;
+          {FILTERS.map((id) => {
+            const active = statusFilter === id;
             return (
               <button
-                key={f.id}
-                onClick={() => setStatusFilter(f.id)}
+                key={id}
+                onClick={() => setStatusFilter(id)}
                 className={cn(
                   "flex h-7 items-center gap-1.5 rounded-[2px] px-2.5 font-mono text-[11px] uppercase tracking-[0.1em] transition-colors",
                   active
@@ -139,8 +142,8 @@ export default function AppList() {
                     : "text-[color:var(--color-text-2)] hover:text-[color:var(--color-text-0)]",
                 )}
               >
-                <FilterDot id={f.id} active={active} />
-                <span>{f.label}</span>
+                <FilterDot id={id} active={active} />
+                <span>{t(`filters.${id}`)}</span>
                 <span
                   className={cn(
                     "num ml-0.5 text-[10.5px]",
@@ -149,7 +152,7 @@ export default function AppList() {
                       : "text-[color:var(--color-text-3)]",
                   )}
                 >
-                  {counts[f.id]}
+                  {counts[id]}
                 </span>
               </button>
             );
@@ -165,7 +168,7 @@ export default function AppList() {
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="filter by project name…"
+            placeholder={t("search.placeholder")}
             className={cn(
               "h-full w-full rounded-[3px] border border-[color:var(--color-rule)] bg-[color:var(--color-ink-1)]",
               "pl-8 pr-2 text-[12.5px] text-[color:var(--color-text-0)] placeholder:text-[color:var(--color-text-3)]",
@@ -176,13 +179,13 @@ export default function AppList() {
         </div>
       </div>
 
-      {/* data table */}
       <section className="flex-1 overflow-auto">
         {isLoading && apps.length === 0 ? (
           <EmptyState
             icon={<Wifi className="size-5" strokeWidth={1.4} />}
-            title="connecting"
-            subtitle="Querying the docker socket for compose projects."
+            title={t("empty.connecting.title")}
+            subtitle={t("empty.connecting.subtitle")}
+            labelHint={t("empty.labelLookupHint")}
           />
         ) : error ? (
           <EmptyState
@@ -192,42 +195,44 @@ export default function AppList() {
                 strokeWidth={1.4}
               />
             }
-            title="Unable to reach the backend"
-            subtitle={error}
+            title={t("empty.error.title")}
+            subtitle={translateError(error, tErr)}
             action={
               <Button variant="neutral" size="sm" onClick={fetchApps}>
-                retry
+                {tCommon("actions.retry")}
               </Button>
             }
             tone="err"
+            labelHint={t("empty.labelLookupHint")}
           />
         ) : filteredApps.length === 0 ? (
           <EmptyState
             icon={<CircleSlash2 className="size-5" strokeWidth={1.4} />}
             title={
               searchQuery || statusFilter !== "all"
-                ? "no matches"
-                : "no compose projects"
+                ? t("empty.noMatches.title")
+                : t("empty.noProjects.title")
             }
             subtitle={
               searchQuery || statusFilter !== "all"
-                ? "Adjust the filter or search to see more rows."
-                : "Start a docker compose project on this host — it will appear here automatically once labelled."
+                ? t("empty.noMatches.subtitle")
+                : t("empty.noProjects.subtitle")
             }
+            labelHint={t("empty.labelLookupHint")}
           />
         ) : (
           <table className="w-full border-separate border-spacing-0 text-[12.5px]">
             <thead>
               <tr className="text-left">
                 {[
-                  { label: "project", w: "w-[34%]" },
-                  { label: "status", w: "w-[14%]" },
-                  { label: "services", w: "w-[24%]" },
-                  { label: "last deployed", w: "w-[16%]" },
+                  { label: t("table.project"), w: "w-[34%]" },
+                  { label: t("table.status"), w: "w-[14%]" },
+                  { label: t("table.services"), w: "w-[24%]" },
+                  { label: t("table.lastDeployed"), w: "w-[16%]" },
                   { label: "", w: "w-[12%] text-right" },
-                ].map((h) => (
+                ].map((h, i) => (
                   <th
-                    key={h.label || "actions"}
+                    key={`${h.label}-${i}`}
                     className={cn(
                       "label-eyebrow border-b border-[color:var(--color-rule)] bg-[color:var(--color-ink-0)] px-4 py-2.5",
                       "sticky top-0 z-10",
@@ -280,15 +285,17 @@ function FilterDot({ id, active }: { id: StatusFilter; active: boolean }) {
 
 function StatusPulse({
   counts,
+  labels,
 }: {
   counts: { running: number; stopped: number; error: number };
+  labels: { up: string; down: string; err: string };
 }) {
   return (
     <div className="hidden items-center gap-3 px-3 md:flex">
-      <Indicator tone="up" value={counts.running} label="up" />
-      <Indicator tone="down" value={counts.stopped} label="down" />
+      <Indicator tone="up" value={counts.running} label={labels.up} />
+      <Indicator tone="down" value={counts.stopped} label={labels.down} />
       {counts.error > 0 && (
-        <Indicator tone="err" value={counts.error} label="err" />
+        <Indicator tone="err" value={counts.error} label={labels.err} />
       )}
     </div>
   );
@@ -322,12 +329,14 @@ function EmptyState({
   subtitle,
   action,
   tone,
+  labelHint,
 }: {
   icon: React.ReactNode;
   title: string;
   subtitle: string;
   action?: React.ReactNode;
   tone?: "err";
+  labelHint: string;
 }) {
   return (
     <div className="flex h-full min-h-[280px] flex-col items-center justify-center gap-3 px-8 py-16 text-center">
@@ -349,8 +358,7 @@ function EmptyState({
       </p>
       {action}
       <span className="mt-3 font-mono text-[10px] uppercase tracking-[0.16em] text-[color:var(--color-text-4)]">
-        <ServerCog className="mr-1 inline size-3 align-[-2px]" /> compose lookup
-        via labels
+        <ServerCog className="mr-1 inline size-3 align-[-2px]" /> {labelHint}
       </span>
     </div>
   );

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { ShieldCheck, Trash2, UserPlus } from "lucide-react";
+import { Trans, useTranslation } from "react-i18next";
 
 import { useCurrentUser } from "../hooks/useAuth";
 import {
@@ -9,6 +10,7 @@ import {
   useUsers,
 } from "../hooks/useUsers";
 import { cn } from "../lib/utils";
+import { translateError } from "../lib/translateError";
 import type { AuthUser, UserRole } from "../types";
 import { Button } from "./ui/button";
 import { Field, SelectField } from "./ui/Field";
@@ -20,6 +22,10 @@ function formatTimestamp(unix?: number): string {
 }
 
 export default function UserManager() {
+  const { t } = useTranslation("users");
+  const { t: tErr } = useTranslation("errors");
+  const { t: tCommon } = useTranslation("common");
+
   const currentUser = useCurrentUser();
   const users = useUsers();
   const create = useCreateUser();
@@ -35,7 +41,7 @@ export default function UserManager() {
     e.preventDefault();
     setLocalError(null);
     if (password.length < 8) {
-      setLocalError("password must be at least 8 characters");
+      setLocalError(t("create.errors.passwordTooShort"));
       return;
     }
     try {
@@ -48,7 +54,7 @@ export default function UserManager() {
       setPassword("");
       setRole("member");
     } catch (err) {
-      setLocalError((err as Error).message);
+      setLocalError(translateError(err, tErr));
     }
   };
 
@@ -58,11 +64,7 @@ export default function UserManager() {
   };
 
   const handleDelete = (u: AuthUser) => {
-    if (
-      !confirm(
-        `${u.username} を削除しますか？関連するセッションと MCP トークンも消えます。`,
-      )
-    )
+    if (!confirm(t("list.actions.confirmDelete", { username: u.username })))
       return;
     del.mutate(u.id);
   };
@@ -76,29 +78,28 @@ export default function UserManager() {
       <header className="border-b border-[color:var(--color-rule)] bg-[color:var(--color-ink-0)]/80 px-8 py-4 backdrop-blur-sm">
         <div className="flex items-baseline gap-3">
           <h1 className="font-display text-[22px] font-semibold leading-none tracking-[-0.02em] text-[color:var(--color-text-0)]">
-            Users
+            {t("title")}
           </h1>
           <span className="label-eyebrow">
-            <span className="num text-[color:var(--color-text-2)]">
-              {adminCount}
-            </span>{" "}
-            admin ·{" "}
-            <span className="num text-[color:var(--color-text-2)]">
-              {memberCount}
-            </span>{" "}
-            member
+            <Trans
+              i18nKey="summary"
+              t={t}
+              values={{ admins: adminCount, members: memberCount }}
+              components={{
+                strong: (
+                  <span className="num text-[color:var(--color-text-2)]" />
+                ),
+              }}
+            />
           </span>
         </div>
         <p className="mt-2 max-w-2xl text-[12.5px] leading-relaxed text-[color:var(--color-text-2)]">
-          Administrators can sign in, manage other users, and issue their own
-          MCP tokens. Members have container access but cannot reach this
-          screen.
+          {t("blurb")}
         </p>
       </header>
 
       <div className="flex-1 overflow-auto px-8 py-6">
         <div className="mx-auto flex max-w-5xl flex-col gap-6">
-          {/* create user */}
           <section className="surface overflow-hidden rounded-[6px]">
             <header className="flex items-center justify-between border-b border-[color:var(--color-rule)] px-5 py-3">
               <div className="flex items-center gap-2">
@@ -107,10 +108,10 @@ export default function UserManager() {
                   strokeWidth={1.6}
                 />
                 <h2 className="font-display text-[13px] font-semibold tracking-tight text-[color:var(--color-text-0)]">
-                  Add user
+                  {t("create.title")}
                 </h2>
               </div>
-              <span className="label-eyebrow">bcrypt · cost 10</span>
+              <span className="label-eyebrow">{t("create.hint")}</span>
             </header>
 
             <form
@@ -118,7 +119,7 @@ export default function UserManager() {
               className="grid grid-cols-1 gap-3 px-5 py-4 sm:grid-cols-[2fr_2fr_1fr_auto] sm:items-end"
             >
               <Field
-                label="username"
+                label={t("create.username")}
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 autoComplete="off"
@@ -126,7 +127,7 @@ export default function UserManager() {
                 required
               />
               <Field
-                label="password"
+                label={t("create.password")}
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -135,12 +136,12 @@ export default function UserManager() {
                 minLength={8}
               />
               <SelectField
-                label="role"
+                label={t("create.role")}
                 value={role}
                 onChange={(e) => setRole(e.target.value as UserRole)}
                 options={[
-                  { value: "member", label: "member" },
-                  { value: "admin", label: "admin" },
+                  { value: "member", label: t("list.roles.member") },
+                  { value: "admin", label: t("list.roles.admin") },
                 ]}
               />
               <Button
@@ -150,42 +151,50 @@ export default function UserManager() {
                 disabled={create.isPending || !username.trim() || !password}
                 className="sm:h-9"
               >
-                {create.isPending ? "creating…" : "create"}
+                {create.isPending ? t("create.submitting") : t("create.submit")}
               </Button>
             </form>
             {(localError || create.error) && (
               <p className="border-t border-[color:var(--color-rule)] bg-[color:var(--color-err-soft)] px-5 py-2 font-mono text-[11.5px] text-[color:var(--color-err)]">
-                ▶ {localError ?? (create.error as Error).message}
+                ▶ {localError ?? translateError(create.error, tErr)}
               </p>
             )}
           </section>
 
-          {/* users table */}
           <section className="surface overflow-hidden rounded-[6px]">
             <header className="flex items-center justify-between border-b border-[color:var(--color-rule)] px-5 py-3">
               <h2 className="font-display text-[13px] font-semibold tracking-tight text-[color:var(--color-text-0)]">
-                Operators
+                {t("list.title")}
               </h2>
               {users.isFetching && (
-                <span className="label-eyebrow">syncing</span>
+                <span className="label-eyebrow">
+                  {tCommon("state.syncing")}
+                </span>
               )}
             </header>
 
             {users.error && (
               <p className="border-b border-[color:var(--color-rule)] px-5 py-3 font-mono text-[11.5px] text-[color:var(--color-err)]">
-                ▶ {(users.error as Error).message}
+                ▶ {translateError(users.error, tErr)}
               </p>
             )}
 
             <table className="w-full border-separate border-spacing-0 text-[12.5px]">
               <thead>
                 <tr className="text-left">
-                  {["id", "user", "role", "created", "", ""].map((h, i) => (
+                  {[
+                    t("list.columns.id"),
+                    t("list.columns.user"),
+                    t("list.columns.role"),
+                    t("list.columns.created"),
+                    "",
+                    "",
+                  ].map((label, i) => (
                     <th
-                      key={`${h}-${i}`}
+                      key={`${label}-${i}`}
                       className="label-eyebrow border-b border-[color:var(--color-rule)] bg-[color:var(--color-ink-1)] px-5 py-2"
                     >
-                      {h}
+                      {label}
                     </th>
                   ))}
                 </tr>
@@ -215,7 +224,7 @@ export default function UserManager() {
                             </span>
                             {isSelf && (
                               <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-[color:var(--color-acid)]">
-                                you
+                                {t("list.you")}
                               </span>
                             )}
                           </div>
@@ -228,10 +237,12 @@ export default function UserManager() {
                               className="size-[10px]"
                               strokeWidth={2}
                             />
-                            admin
+                            {t("list.roles.admin")}
                           </StatusBadge>
                         ) : (
-                          <StatusBadge tone="member">member</StatusBadge>
+                          <StatusBadge tone="member">
+                            {t("list.roles.member")}
+                          </StatusBadge>
                         )}
                       </td>
                       <td className="border-b border-[color:var(--color-rule)] px-5 py-2.5 align-middle num text-[11.5px] text-[color:var(--color-text-2)]">
@@ -244,7 +255,9 @@ export default function UserManager() {
                           disabled={updateRole.isPending}
                           onClick={() => handleRoleToggle(u)}
                         >
-                          {u.role === "admin" ? "↓ member" : "↑ admin"}
+                          {u.role === "admin"
+                            ? t("list.actions.demote")
+                            : t("list.actions.promote")}
                         </Button>
                       </td>
                       <td className="border-b border-[color:var(--color-rule)] px-5 py-2 align-middle text-right">
@@ -256,7 +269,7 @@ export default function UserManager() {
                           className="opacity-60 transition-opacity group-hover:opacity-100"
                         >
                           <Trash2 className="size-[12px]" strokeWidth={1.6} />
-                          delete
+                          {t("list.actions.delete")}
                         </Button>
                       </td>
                     </tr>
@@ -267,9 +280,7 @@ export default function UserManager() {
 
             {(updateRole.error || del.error) && (
               <p className="border-t border-[color:var(--color-rule)] bg-[color:var(--color-err-soft)] px-5 py-2 font-mono text-[11.5px] text-[color:var(--color-err)]">
-                ▶{" "}
-                {(updateRole.error as Error)?.message ??
-                  (del.error as Error)?.message}
+                ▶ {translateError(updateRole.error ?? del.error, tErr)}
               </p>
             )}
           </section>

@@ -1,9 +1,11 @@
 import { useState } from "react";
 import { Download, FileText, Play, RotateCw, Square } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 import { apiClient } from "../api/client";
 import type { ComposeApp } from "../types";
 import { cn } from "../lib/utils";
+import { translateError } from "../lib/translateError";
 import { StatusBadge } from "./ui/StatusBadge";
 
 interface AppCardProps {
@@ -21,6 +23,8 @@ export default function AppCard({
   onViewLogs,
   onCheckUpdates,
 }: AppCardProps) {
+  const { t } = useTranslation("apps");
+  const { t: tErr } = useTranslation("errors");
   const [isLoading, setIsLoading] = useState(false);
 
   const handleAction = async (action: () => Promise<void>) => {
@@ -31,7 +35,7 @@ export default function AppCard({
       onRefresh();
     } catch (err) {
       console.error("Action failed:", err);
-      alert(`操作に失敗しました: ${err}`);
+      alert(t("alerts.actionFailed", { message: translateError(err, tErr) }));
     } finally {
       setIsLoading(false);
     }
@@ -50,7 +54,6 @@ export default function AppCard({
         "hover:bg-[color:var(--color-ink-2)]",
       )}
     >
-      {/* project */}
       <td className="border-b border-[color:var(--color-rule)] px-4 py-2.5 align-middle">
         <div className="flex items-center gap-2">
           <span className={cn("status-dot", tone)} aria-hidden />
@@ -60,52 +63,51 @@ export default function AppCard({
         </div>
       </td>
 
-      {/* status */}
       <td className="border-b border-[color:var(--color-rule)] px-4 py-2.5 align-middle">
         <StatusBadge tone={tone}>{app.status}</StatusBadge>
       </td>
 
-      {/* services */}
       <td className="border-b border-[color:var(--color-rule)] px-4 py-2.5 align-middle">
-        <ServiceChips services={app.services} />
+        <ServiceChips
+          services={app.services}
+          noServiceLabel={t("table.noService")}
+        />
       </td>
 
-      {/* last deployed */}
       <td className="border-b border-[color:var(--color-rule)] px-4 py-2.5 align-middle">
         <span className="num text-[11.5px] text-[color:var(--color-text-2)]">
-          {formatTimestamp(app.lastDeployed)}
+          {formatTimestamp(app.lastDeployed, t("table.neverRecorded"))}
         </span>
       </td>
 
-      {/* actions */}
       <td className="border-b border-[color:var(--color-rule)] px-4 py-2 align-middle">
         <div className="flex items-center justify-end gap-1 opacity-60 transition-opacity group-hover:opacity-100">
           <RowAction
-            label="start"
+            label={t("actions.start")}
             disabled={isLoading || app.status === "running"}
             onClick={() => handleAction(() => apiClient.startApp(app.name))}
             icon={<Play className="size-[14px]" strokeWidth={1.6} />}
             tone="up"
           />
           <RowAction
-            label="stop"
+            label={t("actions.stop")}
             disabled={isLoading || app.status === "stopped"}
             onClick={() => handleAction(() => apiClient.stopApp(app.name))}
             icon={<Square className="size-[14px]" strokeWidth={1.6} />}
           />
           <RowAction
-            label="restart"
+            label={t("actions.restart")}
             disabled={isLoading}
             onClick={() => handleAction(() => apiClient.restartApp(app.name))}
             icon={<RotateCw className="size-[14px]" strokeWidth={1.6} />}
           />
           <RowAction
-            label="logs"
+            label={t("actions.logs")}
             onClick={() => onViewLogs(app.name)}
             icon={<FileText className="size-[14px]" strokeWidth={1.6} />}
           />
           <RowAction
-            label="updates"
+            label={t("actions.updates")}
             onClick={() => onCheckUpdates(app.name)}
             icon={<Download className="size-[14px]" strokeWidth={1.6} />}
           />
@@ -147,10 +149,18 @@ function RowAction({
   );
 }
 
-function ServiceChips({ services }: { services: ComposeApp["services"] }) {
+function ServiceChips({
+  services,
+  noServiceLabel,
+}: {
+  services: ComposeApp["services"];
+  noServiceLabel: string;
+}) {
   if (!services || services.length === 0) {
     return (
-      <span className="text-[11.5px] text-[color:var(--color-text-3)]">—</span>
+      <span className="text-[11.5px] text-[color:var(--color-text-3)]">
+        {noServiceLabel}
+      </span>
     );
   }
   const visible = services.slice(0, 3);
@@ -188,9 +198,9 @@ function ServiceChips({ services }: { services: ComposeApp["services"] }) {
   );
 }
 
-function formatTimestamp(ts?: string): string {
+function formatTimestamp(ts: string | undefined, neverLabel: string): string {
   if (!ts) return "—";
-  if (ts.startsWith("0001-")) return "never recorded";
+  if (ts.startsWith("0001-")) return neverLabel;
   const d = new Date(ts);
   if (Number.isNaN(d.getTime())) return ts;
   return d.toLocaleString();

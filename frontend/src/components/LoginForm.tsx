@@ -1,12 +1,16 @@
 import { useState } from "react";
 import { ArrowRight } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 import { useLogin } from "../hooks/useAuth";
+import { translateError } from "../lib/translateError";
 import { AuthShell } from "./AuthGate";
 import { Button } from "./ui/button";
 import { Field } from "./ui/Field";
 
 export default function LoginForm() {
+  const { t } = useTranslation("auth");
+  const { t: tErr } = useTranslation("errors");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const login = useLogin();
@@ -19,13 +23,13 @@ export default function LoginForm() {
   return (
     <AuthShell
       status="login"
-      title="Sign in to continue"
-      subtitle="Authenticate with your operator credentials to reach the host."
-      hint="Lost your password? An admin can reset it from the Users page after signing in. The MCP endpoint uses its own bearer tokens — issue them from Tokens once logged in."
+      title={t("login.title")}
+      subtitle={t("login.subtitle")}
+      hint={t("login.hint")}
     >
       <form onSubmit={handleSubmit} className="flex flex-col gap-4" noValidate>
         <Field
-          label="username"
+          label={t("login.username")}
           value={username}
           onChange={(e) => setUsername(e.target.value)}
           autoComplete="username"
@@ -34,7 +38,7 @@ export default function LoginForm() {
           required
         />
         <Field
-          label="password"
+          label={t("login.password")}
           type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
@@ -43,7 +47,7 @@ export default function LoginForm() {
         />
         {login.error && (
           <p className="font-mono text-[11.5px] text-[color:var(--color-err)]">
-            ▶ {(login.error as Error).message}
+            ▶ {translateError(login.error, tErr)}
           </p>
         )}
         <Button
@@ -54,10 +58,12 @@ export default function LoginForm() {
           className="mt-2 justify-between"
         >
           <span className="font-mono text-[11px] uppercase tracking-[0.16em] opacity-70">
-            {login.isPending ? "authenticating" : "sign in"}
+            {login.isPending
+              ? t("login.submitPending")
+              : t("login.submitDefault")}
           </span>
           <span className="flex items-center gap-1.5 font-semibold tracking-tight">
-            continue
+            {t("login.continue")}
             <ArrowRight className="size-4" />
           </span>
         </Button>

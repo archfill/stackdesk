@@ -1,7 +1,6 @@
 {
   "title": "アプリケーション",
-  "onHost_one": "{{count}} 件",
-  "onHost_other": "{{count}} 件",
+  "onHost": "件",
   "addApplication": "アプリ追加",
   "filters": {
     "all": "all",

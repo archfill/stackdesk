@@ -1,12 +1,16 @@
 import { useState } from "react";
 import { ShieldCheck } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 import { useSetup } from "../hooks/useAuth";
+import { translateError } from "../lib/translateError";
 import { AuthShell } from "./AuthGate";
 import { Button } from "./ui/button";
 import { Field } from "./ui/Field";
 
 export default function SetupWizard() {
+  const { t } = useTranslation("auth");
+  const { t: tErr } = useTranslation("errors");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
@@ -17,28 +21,29 @@ export default function SetupWizard() {
     e.preventDefault();
     setLocalError(null);
     if (password.length < 8) {
-      setLocalError("password must be at least 8 characters");
+      setLocalError(t("setup.errors.passwordTooShort"));
       return;
     }
     if (password !== confirm) {
-      setLocalError("password confirmation does not match");
+      setLocalError(t("setup.errors.passwordMismatch"));
       return;
     }
     setup.mutate({ username: username.trim(), password });
   };
 
-  const err = localError ?? (setup.error as Error)?.message;
+  const err =
+    localError ?? (setup.error ? translateError(setup.error, tErr) : undefined);
 
   return (
     <AuthShell
       status="setup"
-      title="Bootstrap your operator"
-      subtitle="No accounts exist on this host yet. Create the first administrator below — they will own user management and MCP token issuance."
-      hint="This is a one-time setup. After creation, you will land in the dashboard signed in. Subsequent users are added from the Users page (admin only)."
+      title={t("setup.title")}
+      subtitle={t("setup.subtitle")}
+      hint={t("setup.hint")}
     >
       <form onSubmit={handleSubmit} className="flex flex-col gap-4" noValidate>
         <Field
-          label="username"
+          label={t("setup.username")}
           value={username}
           onChange={(e) => setUsername(e.target.value)}
           autoComplete="username"
@@ -47,17 +52,17 @@ export default function SetupWizard() {
           required
         />
         <Field
-          label="password"
+          label={t("setup.password")}
           type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           autoComplete="new-password"
           required
           minLength={8}
-          hint="8 characters minimum · bcrypt cost 10"
+          hint={t("setup.passwordHint")}
         />
         <Field
-          label="confirm password"
+          label={t("setup.confirmPassword")}
           type="password"
           value={confirm}
           onChange={(e) => setConfirm(e.target.value)}
@@ -80,10 +85,12 @@ export default function SetupWizard() {
           className="mt-2 justify-between"
         >
           <span className="font-mono text-[11px] uppercase tracking-[0.16em] opacity-70">
-            {setup.isPending ? "provisioning" : "create admin"}
+            {setup.isPending
+              ? t("setup.submitPending")
+              : t("setup.submitDefault")}
           </span>
           <span className="flex items-center gap-1.5 font-semibold tracking-tight">
-            initialize
+            {t("setup.initialize")}
             <ShieldCheck className="size-4" />
           </span>
         </Button>

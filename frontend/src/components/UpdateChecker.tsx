@@ -5,12 +5,14 @@ import {
   CloudDownload,
   RefreshCcw,
 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 import { apiClient } from "../api/client";
 import type { ImageUpdate } from "../types";
 import { Button } from "./ui/button";
 import { StatusBadge } from "./ui/StatusBadge";
 import { cn } from "../lib/utils";
+import { translateError } from "../lib/translateError";
 
 interface UpdateCheckerProps {
   appName: string;
@@ -23,10 +25,13 @@ export default function UpdateChecker({
   onClose,
   onRefresh,
 }: UpdateCheckerProps) {
+  const { t } = useTranslation("apps");
+  const { t: tErr } = useTranslation("errors");
+  const { t: tCommon } = useTranslation("common");
   const [updates, setUpdates] = useState<ImageUpdate[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isPulling, setIsPulling] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<unknown>(null);
 
   const fetchUpdates = async () => {
     try {
@@ -35,9 +40,7 @@ export default function UpdateChecker({
       const data = await apiClient.checkUpdates(appName);
       setUpdates(data || []);
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Failed to check for updates",
-      );
+      setError(err);
     } finally {
       setIsLoading(false);
     }
@@ -52,15 +55,11 @@ export default function UpdateChecker({
     try {
       setIsPulling(true);
       await apiClient.pullImages(appName);
-      alert(
-        "Images pulled successfully. Restart the application to use the new images.",
-      );
+      alert(t("updates.pullSuccess"));
       onRefresh();
       onClose();
     } catch (err) {
-      alert(
-        `Failed to pull images: ${err instanceof Error ? err.message : "Unknown error"}`,
-      );
+      alert(t("updates.pullFail", { message: translateError(err, tErr) }));
     } finally {
       setIsPulling(false);
     }
@@ -74,7 +73,12 @@ export default function UpdateChecker({
     <main className="flex flex-1 flex-col">
       <header className="flex items-center justify-between gap-4 border-b border-[color:var(--color-rule)] bg-[color:var(--color-ink-0)]/80 px-8 py-4 backdrop-blur-sm">
         <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" onClick={onClose} title="Back">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onClose}
+            title={tCommon("actions.back")}
+          >
             <ArrowLeft className="size-[15px]" strokeWidth={1.6} />
           </Button>
           <div className="flex items-center gap-2">
@@ -83,7 +87,7 @@ export default function UpdateChecker({
               strokeWidth={1.6}
             />
             <h1 className="font-display text-[18px] font-semibold leading-none tracking-[-0.02em] text-[color:var(--color-text-0)]">
-              image updates
+              {t("updates.titlePrefix")}
               <span className="text-[color:var(--color-text-3)]"> · </span>
               <span className="font-mono text-[14px] font-medium text-[color:var(--color-text-2)]">
                 {appName}
@@ -98,7 +102,7 @@ export default function UpdateChecker({
               className={cn("size-[13px]", isLoading && "animate-spin")}
               strokeWidth={1.7}
             />
-            recheck
+            {t("updates.recheck")}
           </Button>
           {hasUpdates && (
             <Button
@@ -108,7 +112,7 @@ export default function UpdateChecker({
               disabled={isPulling}
             >
               <CloudDownload className="size-[14px]" strokeWidth={1.7} />
-              {isPulling ? "pulling…" : "pull images"}
+              {isPulling ? t("updates.pulling") : t("updates.pull")}
             </Button>
           )}
         </div>
@@ -118,26 +122,33 @@ export default function UpdateChecker({
         <div className="mx-auto flex max-w-5xl flex-col gap-6">
           <section className="surface flex flex-wrap items-center justify-between gap-4 rounded-[5px] px-5 py-4">
             <div className="flex items-center gap-4">
-              <SummaryStat tone="up" value={upToDateCount} label="up to date" />
+              <SummaryStat
+                tone="up"
+                value={upToDateCount}
+                label={t("updates.summary.upToDate")}
+              />
               <span className="h-6 w-px bg-[color:var(--color-rule)]" />
-              <SummaryStat tone="warn" value={updateCount} label="updatable" />
+              <SummaryStat
+                tone="warn"
+                value={updateCount}
+                label={t("updates.summary.updatable")}
+              />
             </div>
             <p className="max-w-md text-[12px] leading-relaxed text-[color:var(--color-text-2)]">
-              Comparison runs against the registry manifest digest. Locally
-              built images without a remote tag are skipped.
+              {t("updates.summary.blurb")}
             </p>
           </section>
 
           {isLoading && updates.length === 0 ? (
             <section className="surface rounded-[5px] p-6">
               <p className="text-[12.5px] text-[color:var(--color-text-2)]">
-                inspecting registry manifests…
+                {t("updates.states.inspecting")}
               </p>
             </section>
           ) : error ? (
             <section className="surface rounded-[5px] border border-[color:color-mix(in_srgb,var(--color-err)_35%,transparent)] bg-[color:var(--color-err-soft)] p-6">
               <p className="font-mono text-[12px] text-[color:var(--color-err)]">
-                ▶ {error}
+                ▶ {translateError(error, tErr)}
               </p>
             </section>
           ) : updates.length === 0 ? (
@@ -147,18 +158,17 @@ export default function UpdateChecker({
                 strokeWidth={1.5}
               />
               <p className="font-display text-[14px] font-semibold tracking-tight text-[color:var(--color-text-0)]">
-                everything is current
+                {t("updates.states.current.title")}
               </p>
               <p className="max-w-md text-[12px] leading-relaxed text-[color:var(--color-text-3)]">
-                No comparable manifests differ from the local digest. Locally
-                built images may not appear here.
+                {t("updates.states.current.subtitle")}
               </p>
             </section>
           ) : (
             <section className="surface overflow-hidden rounded-[5px]">
               <header className="border-b border-[color:var(--color-rule)] px-5 py-3">
                 <h2 className="font-display text-[13px] font-semibold tracking-tight text-[color:var(--color-text-0)]">
-                  Per-service manifest diff
+                  {t("updates.diff.title")}
                 </h2>
               </header>
               <ul className="divide-y divide-[color:var(--color-rule)]">
@@ -176,13 +186,13 @@ export default function UpdateChecker({
                       </p>
                       <div className="mt-1.5 grid grid-cols-1 gap-x-4 gap-y-0.5 font-mono text-[10.5px] text-[color:var(--color-text-3)] sm:grid-cols-2">
                         <span>
-                          local{" "}
+                          {t("updates.diff.local")}{" "}
                           <span className="text-[color:var(--color-text-2)]">
                             {trimDigest(u.currentDigest)}
                           </span>
                         </span>
                         <span>
-                          remote{" "}
+                          {t("updates.diff.remote")}{" "}
                           <span className="text-[color:var(--color-text-2)]">
                             {trimDigest(u.latestDigest)}
                           </span>
@@ -192,11 +202,11 @@ export default function UpdateChecker({
                     <div>
                       {u.updateRequired ? (
                         <StatusBadge tone="warn" withDot>
-                          update available
+                          {t("updates.diff.updateAvailable")}
                         </StatusBadge>
                       ) : (
                         <StatusBadge tone="up" withDot>
-                          current
+                          {t("updates.diff.current")}
                         </StatusBadge>
                       )}
                     </div>

@@ -1,7 +1,9 @@
 import { Boxes, KeyRound, LogOut, Users2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 import { useCurrentUser, useLogout } from "../hooks/useAuth";
 import { cn } from "../lib/utils";
+import { LanguageToggle } from "./ui/LanguageToggle";
 
 interface SidebarProps {
   activeView: string;
@@ -21,24 +23,37 @@ interface NavSection {
 }
 
 export default function Sidebar({ activeView, onViewChange }: SidebarProps) {
+  const { t } = useTranslation("auth");
   const user = useCurrentUser();
   const logout = useLogout();
   const isAdmin = user.data?.role === "admin";
 
   const sections: NavSection[] = [
     {
-      label: "workloads",
-      items: [{ id: "all", label: "Applications", icon: Boxes, shortcut: "A" }],
+      label: t("sidebar.sections.workloads"),
+      items: [
+        {
+          id: "all",
+          label: t("sidebar.nav.applications"),
+          icon: Boxes,
+          shortcut: "A",
+        },
+      ],
     },
     {
-      label: "access",
+      label: t("sidebar.sections.access"),
       items: [
-        { id: "tokens", label: "MCP Tokens", icon: KeyRound, shortcut: "T" },
+        {
+          id: "tokens",
+          label: t("sidebar.nav.tokens"),
+          icon: KeyRound,
+          shortcut: "T",
+        },
         ...(isAdmin
           ? [
               {
                 id: "users",
-                label: "Users",
+                label: t("sidebar.nav.users"),
                 icon: Users2,
                 shortcut: "U",
               } as NavItem,
@@ -50,7 +65,6 @@ export default function Sidebar({ activeView, onViewChange }: SidebarProps) {
 
   return (
     <aside className="surface flex w-[248px] flex-shrink-0 flex-col border-y-0 border-l-0 border-r border-[color:var(--color-rule)] bg-[color:var(--color-ink-1)]">
-      {/* brand row */}
       <div className="flex items-center gap-2.5 border-b border-[color:var(--color-rule)] px-4 py-3.5">
         <BrandGlyph />
         <div className="flex flex-col leading-none">
@@ -63,7 +77,6 @@ export default function Sidebar({ activeView, onViewChange }: SidebarProps) {
         </div>
       </div>
 
-      {/* nav */}
       <nav className="flex flex-1 flex-col gap-5 px-3 py-4">
         {sections.map((sec) => (
           <div key={sec.label} className="flex flex-col gap-0.5">
@@ -82,7 +95,6 @@ export default function Sidebar({ activeView, onViewChange }: SidebarProps) {
                       : "text-[color:var(--color-text-2)] hover:bg-[color:var(--color-ink-2)] hover:text-[color:var(--color-text-0)]",
                   )}
                 >
-                  {/* left active stripe */}
                   <span
                     className={cn(
                       "absolute left-0 top-1/2 h-4 w-[2px] -translate-y-1/2 rounded-r",
@@ -115,7 +127,6 @@ export default function Sidebar({ activeView, onViewChange }: SidebarProps) {
         ))}
       </nav>
 
-      {/* user footer */}
       <div className="border-t border-[color:var(--color-rule)] p-3">
         <div className="flex items-center gap-2.5 px-1 pb-2.5">
           <Avatar name={user.data?.username ?? "?"} />
@@ -124,9 +135,14 @@ export default function Sidebar({ activeView, onViewChange }: SidebarProps) {
               {user.data?.username ?? "—"}
             </span>
             <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-[color:var(--color-text-3)]">
-              {user.data?.role === "admin" ? "admin · root" : "member"}
+              {user.data?.role === "admin"
+                ? t("sidebar.role.admin")
+                : t("sidebar.role.member")}
             </span>
           </div>
+        </div>
+        <div className="mb-2 flex justify-start">
+          <LanguageToggle compact />
         </div>
         <button
           onClick={() => logout.mutate()}
@@ -140,7 +156,7 @@ export default function Sidebar({ activeView, onViewChange }: SidebarProps) {
         >
           <LogOut className="size-[14px]" strokeWidth={1.5} />
           <span className="flex-1 text-left">
-            {logout.isPending ? "signing out…" : "sign out"}
+            {logout.isPending ? t("sidebar.signingOut") : t("sidebar.signOut")}
           </span>
         </button>
       </div>
