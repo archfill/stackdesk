@@ -2,6 +2,7 @@ package docker
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 
 	"docker-manager/internal/models"
@@ -66,11 +67,20 @@ func (c *Client) ListComposeApps() ([]models.ComposeApp, error) {
 		}
 	}
 
-	// マップからスライスに変換
+	// マップからスライスに変換。
+	// Go の map iteration は意図的に順序が不定なので、決定的順序を保証するため
+	// プロジェクト名・サービス名で安定ソートする（UI が 5 秒ごとの polling で
+	// 並びがちらつくのを防ぐ）。
 	apps := make([]models.ComposeApp, 0, len(projectMap))
 	for _, app := range projectMap {
+		sort.Slice(app.Services, func(i, j int) bool {
+			return app.Services[i].Name < app.Services[j].Name
+		})
 		apps = append(apps, *app)
 	}
+	sort.Slice(apps, func(i, j int) bool {
+		return apps[i].Name < apps[j].Name
+	})
 
 	return apps, nil
 }
