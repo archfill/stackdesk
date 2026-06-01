@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import {
   CircleSlash2,
   Plus,
@@ -9,8 +9,7 @@ import {
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
-import { apiClient } from "../api/client";
-import type { ComposeApp } from "../types";
+import { useApps } from "../hooks/useApps";
 import { Button } from "./ui/button";
 import { cn } from "../lib/utils";
 import { translateError } from "../lib/translateError";
@@ -26,11 +25,14 @@ export default function AppList() {
   const { t } = useTranslation("apps");
   const { t: tErr } = useTranslation("errors");
   const { t: tCommon } = useTranslation("common");
-  const [apps, setApps] = useState<ComposeApp[]>([]);
+  const {
+    data: apps = [],
+    error,
+    isPending,
+    refetch,
+  } = useApps();
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<unknown>(null);
   const [selectedAppForLogs, setSelectedAppForLogs] = useState<string | null>(
     null,
   );
@@ -38,24 +40,9 @@ export default function AppList() {
     string | null
   >(null);
 
-  const fetchApps = async () => {
-    try {
-      setIsLoading(true);
-      setError(null);
-      const data = await apiClient.listApps();
-      setApps(data || []);
-    } catch (err) {
-      setError(err);
-    } finally {
-      setIsLoading(false);
-    }
+  const fetchApps = () => {
+    void refetch();
   };
-
-  useEffect(() => {
-    fetchApps();
-    const interval = setInterval(fetchApps, 5000);
-    return () => clearInterval(interval);
-  }, []);
 
   const counts = useMemo(() => {
     const c = { all: apps.length, running: 0, stopped: 0, error: 0 };
@@ -180,14 +167,14 @@ export default function AppList() {
       </div>
 
       <section className="flex-1 overflow-auto">
-        {isLoading && apps.length === 0 ? (
+        {isPending && apps.length === 0 ? (
           <EmptyState
             icon={<Wifi className="size-5" strokeWidth={1.4} />}
             title={t("empty.connecting.title")}
             subtitle={t("empty.connecting.subtitle")}
             labelHint={t("empty.labelLookupHint")}
           />
-        ) : error ? (
+        ) : error && apps.length === 0 ? (
           <EmptyState
             icon={
               <TriangleAlert

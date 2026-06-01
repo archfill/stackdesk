@@ -1,14 +1,27 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import {
+  keepPreviousData,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query'
 import { apiClient } from '../api/client'
 import type { ComposeApp } from '../types'
 
 const APPS_QUERY_KEY = ['apps']
+const APPS_REFETCH_INTERVAL_MS = 5000
+const APPS_ERROR_REFETCH_INTERVAL_MS = 15000
 
 export function useApps() {
   return useQuery<ComposeApp[]>({
     queryKey: APPS_QUERY_KEY,
-    queryFn: () => apiClient.listApps(),
-    refetchInterval: 5000, // 5秒ごとに自動更新
+    queryFn: ({ signal }) => apiClient.listApps({ signal }),
+    placeholderData: keepPreviousData,
+    refetchInterval: (query) =>
+      query.state.error
+        ? APPS_ERROR_REFETCH_INTERVAL_MS
+        : APPS_REFETCH_INTERVAL_MS,
+    refetchIntervalInBackground: false,
+    staleTime: APPS_REFETCH_INTERVAL_MS,
   })
 }
 

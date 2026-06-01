@@ -144,8 +144,8 @@ class ApiClient {
   }
 
   // アプリケーション一覧取得
-  async listApps(): Promise<ComposeApp[]> {
-    return this.request<ComposeApp[]>("/api/apps");
+  async listApps(options?: Pick<RequestInit, "signal">): Promise<ComposeApp[]> {
+    return this.request<ComposeApp[]>("/api/apps", options);
   }
 
   // アプリケーション起動
