@@ -36,7 +36,9 @@ services:
       - "5173:5173"
     environment:
       - NODE_ENV=development
-      - VITE_API_URL=http://backend:8080
+      # VITE_API_URL はブラウザに焼き込まれるので host から見える URL を指定する。
+      # コンテナ内 DNS の "backend" はブラウザからは解決できない。
+      - VITE_API_URL=${VITE_API_URL:-http://localhost:8080}
     volumes:
       # ソースコードをマウント（ホットリロード用）
       - ./frontend:/app
