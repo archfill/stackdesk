@@ -6,6 +6,14 @@
   <img src="./frontend/public/favicon.svg" alt="StackDesk icon" width="96" height="96">
 </p>
 
+<p align="center">
+  <a href="https://github.com/archfill/stackdesk/actions/workflows/ci.yml"><img src="https://github.com/archfill/stackdesk/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+  <a href="https://github.com/archfill/stackdesk/actions/workflows/codeql.yml"><img src="https://github.com/archfill/stackdesk/actions/workflows/codeql.yml/badge.svg" alt="CodeQL"></a>
+  <a href="https://github.com/archfill/stackdesk/releases"><img src="https://img.shields.io/github/v/release/archfill/stackdesk?display_name=tag&sort=semver" alt="Latest release"></a>
+  <a href="https://goreportcard.com/report/github.com/archfill/stackdesk"><img src="https://goreportcard.com/badge/github.com/archfill/stackdesk" alt="Go Report Card"></a>
+  <a href="./LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License: MIT"></a>
+</p>
+
 StackDesk is a Compose-first operations console for managing Docker Compose
 projects and standalone containers on a host through a Web UI and MCP.
 
