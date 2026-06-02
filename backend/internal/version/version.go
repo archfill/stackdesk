@@ -3,4 +3,4 @@
 package version
 
 // Current is the StackDesk application version.
-const Current = "0.0.1" // x-release-please-version
+const Current = "0.1.0" // x-release-please-version
