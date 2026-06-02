@@ -57,7 +57,7 @@ projects and standalone containers on a host through a Web UI and MCP.
 ### Development environment
 
 ```bash
-./dev.sh                 # auto-detects docker compose flavor
+just dev                 # start the hot-reload dev stack
 # in another tab:
 open http://localhost:5173
 ```
@@ -195,21 +195,20 @@ tools.
 
 ## Development
 
-### Backend
+Common operations are exposed through [just](https://just.systems/):
 
 ```bash
-cd backend
-go test ./...          # all tests
-go run cmd/server/main.go
+just              # list every recipe
+just dev          # start the hot-reload Docker stack
+just check        # run everything CI runs (vet + tests + lint + build)
+just fmt          # gofmt the backend
 ```
 
-### Frontend
+Or invoke the underlying tools directly:
 
 ```bash
-cd frontend
-pnpm install
-pnpm run dev
-pnpm run build
+cd backend && go test ./...
+cd frontend && pnpm install && pnpm run dev
 ```
 
 ## Project layout

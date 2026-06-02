@@ -9,7 +9,7 @@ description: Work with the local StackDesk development environment. Use when the
 
 Use the existing project files as the source of truth:
 
-- `dev.sh` is the preferred local startup entrypoint.
+- `just dev` is the preferred local startup entrypoint.
 - `docker-compose.dev.yml` defines the development stack.
 - `DEVELOPMENT.md` and `README.md` contain the documented commands and URLs.
 
@@ -32,7 +32,7 @@ Do not invent separate local startup commands unless the repo files have changed
 3. Start the development environment with:
 
    ```bash
-   ./dev.sh
+   just dev
    ```
 
    This script detects `docker compose` or `docker-compose`, stops any existing dev stack, rebuilds images, and starts the services.

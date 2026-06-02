@@ -18,7 +18,7 @@ frontend/  React 19 + TypeScript + Vite + Tailwind CSS + TanStack Query + react-
 ### ホットリロード環境（推奨）
 
 ```bash
-./dev.sh
+just dev
 ```
 
 - backend: Air で `.go` 変更を検知して再起動

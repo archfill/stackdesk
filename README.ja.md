@@ -56,7 +56,7 @@ StackDesk は、サーバ上の Docker Compose アプリケーションと単体
 ### 開発環境
 
 ```bash
-./dev.sh                 # docker compose を自動検出して起動
+just dev                 # ホットリロード dev スタックを起動
 # 別タブで:
 open http://localhost:5173
 ```
@@ -191,21 +191,20 @@ Claude Code を再起動して MCP server を承認すると `mcp__stackdesk__*`
 
 ## 開発
 
-### バックエンド
+主要操作は [just](https://just.systems/) に集約してある:
 
 ```bash
-cd backend
-go test ./...          # 全テスト
-go run cmd/server/main.go
+just              # 利用可能なレシピを一覧
+just dev          # ホットリロード Docker stack を起動
+just check        # CI と同等の検証（vet + test + lint + build）
+just fmt          # backend を gofmt
 ```
 
-### フロントエンド
+低レベルなコマンドを直接叩く場合:
 
 ```bash
-cd frontend
-pnpm install
-pnpm run dev
-pnpm run build
+cd backend && go test ./...
+cd frontend && pnpm install && pnpm run dev
 ```
 
 ## プロジェクト構造

@@ -25,7 +25,7 @@
 **推奨**: 自動検出スクリプトを使用
 ```bash
 # プロジェクトルートで実行（docker compose / docker-compose 自動検出）
-./dev.sh
+just dev
 ```
 
 **または手動で起動**:

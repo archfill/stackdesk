@@ -23,7 +23,7 @@ local and CI stay in sync without a second source of truth.
 The fastest way is the hot-reload Docker environment:
 
 ```bash
-./dev.sh
+just dev
 ```
 
 This runs `docker-compose.dev.yml` with Air (Go) and Vite HMR. See
@@ -35,19 +35,34 @@ After bootstrap:
 - Frontend: <http://localhost:5173>
 - Backend: <http://localhost:8080>
 
+## Task runner
+
+Common operations are exposed through [just](https://just.systems/) so a
+contributor doesn't have to remember the exact backend / frontend
+incantations:
+
+```bash
+just            # list every recipe
+just dev        # start the hot-reload Docker stack
+just check      # run everything CI runs (vet + tests + lint + build)
+just fmt        # gofmt the backend
+```
+
+Install just via `mise install just`, `brew install just`, `cargo install
+just`, or your distro's package manager. The raw commands are still
+available if you prefer skipping just.
+
 ## Checks before opening a PR
 
 ```bash
-# Backend
-cd backend
-go vet ./...
-go test -race ./...
+just check
+```
 
-# Frontend
-cd frontend
-pnpm install --frozen-lockfile
-pnpm run lint
-pnpm run build
+…which is equivalent to:
+
+```bash
+cd backend && go vet ./... && go test -race ./...
+cd frontend && pnpm install --frozen-lockfile && pnpm run lint && pnpm run build
 ```
 
 CI runs the same checks on every push and pull request.
