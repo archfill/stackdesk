@@ -1,4 +1,3 @@
-import { useEffect, useState } from "react";
 import {
   ArrowLeft,
   CheckCircle2,
@@ -7,8 +6,7 @@ import {
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
-import { apiClient } from "../api/client";
-import type { ImageUpdate } from "../types";
+import { useCheckUpdates, usePullImages } from "../hooks/useApps";
 import { Button } from "./ui/button";
 import { StatusBadge } from "./ui/StatusBadge";
 import { cn } from "../lib/utils";
@@ -28,41 +26,23 @@ export default function UpdateChecker({
   const { t } = useTranslation("apps");
   const { t: tErr } = useTranslation("errors");
   const { t: tCommon } = useTranslation("common");
-  const [updates, setUpdates] = useState<ImageUpdate[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isPulling, setIsPulling] = useState(false);
-  const [error, setError] = useState<unknown>(null);
 
-  const fetchUpdates = async () => {
-    try {
-      setIsLoading(true);
-      setError(null);
-      const data = await apiClient.checkUpdates(appName);
-      setUpdates(data || []);
-    } catch (err) {
-      setError(err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const updatesQuery = useCheckUpdates(appName);
+  const updates = updatesQuery.data ?? [];
+  const isLoading = updatesQuery.isLoading || updatesQuery.isFetching;
+  const error = updatesQuery.error;
 
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    fetchUpdates();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [appName]);
+  const pullMutation = usePullImages();
+  const isPulling = pullMutation.isPending;
 
   const handlePullImages = async () => {
     try {
-      setIsPulling(true);
-      await apiClient.pullImages(appName);
+      await pullMutation.mutateAsync(appName);
       alert(t("updates.pullSuccess"));
       onRefresh();
       onClose();
     } catch (err) {
       alert(t("updates.pullFail", { message: translateError(err, tErr) }));
-    } finally {
-      setIsPulling(false);
     }
   };
 
@@ -98,7 +78,11 @@ export default function UpdateChecker({
         </div>
 
         <div className="flex items-center gap-2">
-          <Button variant="neutral" size="md" onClick={fetchUpdates}>
+          <Button
+            variant="neutral"
+            size="md"
+            onClick={() => updatesQuery.refetch()}
+          >
             <RefreshCcw
               className={cn("size-[13px]", isLoading && "animate-spin")}
               strokeWidth={1.7}

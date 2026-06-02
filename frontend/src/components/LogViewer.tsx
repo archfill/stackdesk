@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { ArrowLeft, Pause, Play, RotateCw, Terminal } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
-import { apiClient } from "../api/client";
+import { useLogs } from "../hooks/useApps";
 import { Button } from "./ui/button";
 import { cn } from "../lib/utils";
 import { translateError } from "../lib/translateError";
@@ -15,39 +15,19 @@ interface LogViewerProps {
 export default function LogViewer({ appName, onClose }: LogViewerProps) {
   const { t } = useTranslation("apps");
   const { t: tErr } = useTranslation("errors");
-  const [logs, setLogs] = useState<string[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<unknown>(null);
   const [autoscroll, setAutoscroll] = useState(true);
   const [paused, setPaused] = useState(false);
   const bodyRef = useRef<HTMLDivElement>(null);
 
-  const fetchLogs = async () => {
-    try {
-      setIsLoading(true);
-      setError(null);
-      const data = await apiClient.getLogs(appName);
-      setLogs(data.logs || []);
-    } catch (err) {
-      setError(err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    fetchLogs();
-    if (paused) return;
-    const id = setInterval(fetchLogs, 3000);
-    return () => clearInterval(id);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [appName, paused]);
+  const logsQuery = useLogs(appName, { paused });
+  const logs = logsQuery.data?.logs ?? [];
+  const isLoading = logsQuery.isLoading || logsQuery.isFetching;
+  const error = logsQuery.error;
 
   useEffect(() => {
     if (!autoscroll || !bodyRef.current) return;
     bodyRef.current.scrollTop = bodyRef.current.scrollHeight;
-  }, [logs, autoscroll]);
+  }, [logs.length, autoscroll]);
 
   return (
     <main className="flex flex-1 flex-col">
@@ -105,7 +85,11 @@ export default function LogViewer({ appName, onClose }: LogViewerProps) {
               </>
             )}
           </Button>
-          <Button variant="neutral" size="md" onClick={fetchLogs}>
+          <Button
+            variant="neutral"
+            size="md"
+            onClick={() => logsQuery.refetch()}
+          >
             <RotateCw
               className={cn("size-[13px]", isLoading && "animate-spin")}
               strokeWidth={1.7}
