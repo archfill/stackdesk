@@ -36,6 +36,7 @@ export default function LogViewer({ appName, onClose }: LogViewerProps) {
   };
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchLogs();
     if (paused) return;
     const id = setInterval(fetchLogs, 3000);

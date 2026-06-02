@@ -47,6 +47,7 @@ export default function UpdateChecker({
   };
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchUpdates();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [appName]);
