@@ -6,6 +6,7 @@ import (
 
 	"github.com/archfill/stackdesk/internal/docker"
 	"github.com/archfill/stackdesk/internal/models"
+	"github.com/archfill/stackdesk/internal/version"
 
 	"github.com/docker/docker/api/types/container"
 	"github.com/gin-gonic/gin"
@@ -182,5 +183,12 @@ func (h *Handler) HealthCheck(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"status":  "ok",
 		"service": "stackdesk-api",
+	})
+}
+
+// Version は frontend / 監視ツール向けに app version を返す。
+func (h *Handler) Version(c *gin.Context) {
+	c.JSON(http.StatusOK, gin.H{
+		"version": version.Current,
 	})
 }

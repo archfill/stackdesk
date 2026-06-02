@@ -190,6 +190,11 @@ class ApiClient {
   async healthCheck(): Promise<{ status: string; service: string }> {
     return this.request<{ status: string; service: string }>("/health");
   }
+
+  // バージョン情報（無認証）
+  async version(): Promise<{ version: string }> {
+    return this.request<{ version: string }>("/api/version");
+  }
 }
 
 export const apiClient = new ApiClient();

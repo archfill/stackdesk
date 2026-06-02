@@ -13,7 +13,7 @@
       "extra-files": [
         {
           "type": "generic",
-          "path": "backend/internal/mcp/server.go"
+          "path": "backend/internal/version/version.go"
         }
       ]
     }

@@ -1,6 +1,7 @@
 import { Trans, useTranslation } from "react-i18next";
 
 import { useCurrentUser, useSetupStatus } from "../hooks/useAuth";
+import { useAppVersion } from "../hooks/useVersion";
 import LoginForm from "./LoginForm";
 import SetupWizard from "./SetupWizard";
 import { BrandIcon } from "./ui/BrandIcon";
@@ -78,6 +79,7 @@ export function AuthShell({
 
 function BrandingPane({ status }: { status: "login" | "setup" }) {
   const { t } = useTranslation("auth");
+  const version = useAppVersion();
   return (
     <aside className="terminal-bg relative hidden flex-col justify-between overflow-hidden border-r border-[color:var(--color-rule)] bg-[color:var(--color-ink-0)] px-12 py-12 lg:flex">
       <pre
@@ -152,7 +154,10 @@ function BrandingPane({ status }: { status: "login" | "setup" }) {
           {status === "setup" ? t("shell.footerSetup") : t("shell.footerLogin")}
         </div>
         <div className="font-mono text-[10.5px] uppercase tracking-[0.16em] text-[color:var(--color-text-3)]">
-          {t("shell.build", { hash: buildShortHash() })}
+          {t("shell.build", {
+            version: version.data ?? "—",
+            hash: buildShortHash(),
+          })}
         </div>
       </footer>
     </aside>

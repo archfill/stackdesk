@@ -10,15 +10,15 @@ import (
 
 	"github.com/archfill/stackdesk/internal/docker"
 	"github.com/archfill/stackdesk/internal/store"
+	"github.com/archfill/stackdesk/internal/version"
 
 	"github.com/modelcontextprotocol/go-sdk/auth"
 	mcpsdk "github.com/modelcontextprotocol/go-sdk/mcp"
 )
 
 const (
-	implementationName    = "stackdesk"
-	implementationVersion = "0.0.1" // x-release-please-version
-	requiredScope         = "docker"
+	implementationName = "stackdesk"
+	requiredScope      = "docker"
 )
 
 // New は MCP server を組み立てて http.Handler を返す。
@@ -26,7 +26,7 @@ const (
 func New(dockerClient *docker.Client, st *store.Store) http.Handler {
 	server := mcpsdk.NewServer(&mcpsdk.Implementation{
 		Name:    implementationName,
-		Version: implementationVersion,
+		Version: version.Current,
 	}, nil)
 
 	registerTools(server, dockerClient)

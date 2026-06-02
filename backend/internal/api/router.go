@@ -25,6 +25,9 @@ func RegisterRoutes(
 	// ヘルスチェック（無認証）
 	r.GET("/health", handler.HealthCheck)
 
+	// バージョン情報（無認証、frontend が起動時に取得する）
+	r.GET("/api/version", handler.Version)
+
 	// API グループ（認証必須）
 	api := r.Group("/api", authMW)
 	{
