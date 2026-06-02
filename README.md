@@ -207,9 +207,9 @@ go run cmd/server/main.go
 
 ```bash
 cd frontend
-npm install
-npm run dev
-npm run build
+pnpm install
+pnpm run dev
+pnpm run build
 ```
 
 ## Project layout

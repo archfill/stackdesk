@@ -36,7 +36,7 @@ docker compose up --build
 cd backend && air
 
 # Frontend 単体
-cd frontend && npm run dev
+cd frontend && pnpm run dev
 ```
 
 ## テスト・lint・ビルド
@@ -46,10 +46,10 @@ cd frontend && npm run dev
 cd backend && go test -race ./... && go vet ./...
 
 # Frontend lint（ESLint）
-cd frontend && npm run lint
+cd frontend && pnpm run lint
 
 # Frontend build（tsc -b + vite build）
-cd frontend && npm run build
+cd frontend && pnpm run build
 ```
 
 CI: `.github/workflows/ci.yml` で main push / PR ごとに上記を実行。

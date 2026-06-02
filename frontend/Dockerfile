@@ -1,11 +1,14 @@
 # ビルドステージ
 FROM node:26-alpine AS builder
 
+# corepack で package.json の packageManager フィールドから pnpm 取得
+RUN corepack enable
+
 WORKDIR /app
 
 # 依存関係ファイルをコピー
-COPY package*.json ./
-RUN npm ci
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+RUN pnpm install --frozen-lockfile
 
 # ソースコードをコピー
 COPY . .
@@ -16,7 +19,7 @@ ARG VITE_API_URL=
 ENV VITE_API_URL=$VITE_API_URL
 
 # ビルド
-RUN npm run build
+RUN pnpm run build
 
 # 本番ステージ（Nginx で静的ファイルを配信）
 FROM nginx:alpine
