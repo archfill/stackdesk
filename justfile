@@ -6,6 +6,13 @@ set shell := ["bash", "-cu"]
 default:
     @just --list --unsorted
 
+# --- Onboarding -----------------------------------------------------------
+
+# Install dependencies for both backend and frontend
+install:
+    cd backend && go mod download
+    cd frontend && pnpm install --frozen-lockfile
+
 # --- Development ----------------------------------------------------------
 
 # Start the hot-reload dev stack (backend with Air, frontend with Vite HMR)
@@ -15,6 +22,14 @@ dev:
 # Tear down the dev stack
 dev-down:
     docker compose -f docker-compose.dev.yml down
+
+# Tail the dev compose logs
+logs:
+    docker compose -f docker-compose.dev.yml logs -f
+
+# Open a shell inside the dev backend container
+shell-backend:
+    docker compose -f docker-compose.dev.yml exec backend sh
 
 # Run the backend locally with Air (requires Go and Air installed)
 backend-dev:
@@ -26,8 +41,8 @@ frontend-dev:
 
 # --- Quality gates --------------------------------------------------------
 
-# Run all checks (mirrors CI)
-check: vet test-backend lint-frontend build-frontend
+# Run everything CI runs
+check: vet fmt-check tidy-check test-backend lint-frontend build-frontend
 
 alias ci := check
 
@@ -47,11 +62,29 @@ lint-frontend:
 build-frontend:
     cd frontend && pnpm install --frozen-lockfile && pnpm run build
 
-# --- Formatting -----------------------------------------------------------
+# --- Formatting & module hygiene ------------------------------------------
 
 # Format Go sources with gofmt
 fmt:
     cd backend && gofmt -w .
+
+# Fail if any Go source is not gofmt-clean
+fmt-check:
+    @cd backend && diff=$(gofmt -l .); \
+      if [ -n "$diff" ]; then \
+        echo "gofmt would change the following files:"; \
+        echo "$diff"; \
+        exit 1; \
+      fi
+
+# Normalize backend/go.mod and backend/go.sum
+mod-tidy:
+    cd backend && go mod tidy
+
+# Fail if go mod tidy would modify backend/go.mod or backend/go.sum
+tidy-check:
+    @cd backend && go mod tidy && \
+      git diff --exit-code go.mod go.sum
 
 # --- Production -----------------------------------------------------------
 
