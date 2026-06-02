@@ -6,9 +6,12 @@ updates:
       interval: weekly
     open-pull-requests-limit: 5
     groups:
-      go-deps:
-        patterns:
-          - "*"
+      go-minor-patch:
+        patterns: ["*"]
+        update-types: ["minor", "patch"]
+      go-major:
+        patterns: ["*"]
+        update-types: ["major"]
 
   - package-ecosystem: npm
     directory: /frontend
@@ -16,9 +19,12 @@ updates:
       interval: weekly
     open-pull-requests-limit: 5
     groups:
-      npm-deps:
-        patterns:
-          - "*"
+      npm-minor-patch:
+        patterns: ["*"]
+        update-types: ["minor", "patch"]
+      npm-major:
+        patterns: ["*"]
+        update-types: ["major"]
 
   - package-ecosystem: docker
     directory: /backend
