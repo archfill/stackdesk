@@ -3,6 +3,21 @@
 Thanks for considering a contribution. This document keeps the loop short:
 spin up the dev environment, run the checks, send a focused PR.
 
+## Runtime requirements
+
+Both languages declare their required toolchain in source so any version
+manager — or none — works:
+
+- **Node**: minimum version is pinned by `engines.node` in
+  `frontend/package.json` (currently `>=26.0.0`).
+- **Go**: minimum version and toolchain are pinned by the `go` /
+  `toolchain` directives in `backend/go.mod`.
+
+Use whatever manager you prefer (`mise`, `asdf`, `proto`, `volta`, `nvm`,
+plain installer, …). CI consumes the same files via
+`setup-node`'s `node-version-file` and `setup-go`'s `go-version-file` so
+local and CI stay in sync without a second source of truth.
+
 ## Development setup
 
 The fastest way is the hot-reload Docker environment:
