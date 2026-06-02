@@ -17,7 +17,7 @@ import (
 
 const (
 	implementationName    = "stackdesk"
-	implementationVersion = "0.1.0"
+	implementationVersion = "0.0.1" // x-release-please-version
 	requiredScope         = "docker"
 )
 

@@ -9,7 +9,13 @@
     ".": {
       "package-name": "stackdesk",
       "changelog-path": "CHANGELOG.md",
-      "release-type": "simple"
+      "release-type": "simple",
+      "extra-files": [
+        {
+          "type": "generic",
+          "path": "backend/internal/mcp/server.go"
+        }
+      ]
     }
   }
 }
