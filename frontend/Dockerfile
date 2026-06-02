@@ -10,6 +10,11 @@ RUN npm ci
 # ソースコードをコピー
 COPY . .
 
+# Vite の VITE_API_URL を build-arg で差し込めるようにする
+# 未指定なら src/api/client.ts の fallback (http://localhost:8080) が効く
+ARG VITE_API_URL=
+ENV VITE_API_URL=$VITE_API_URL
+
 # ビルド
 RUN npm run build
 
