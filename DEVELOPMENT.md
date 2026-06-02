@@ -117,14 +117,14 @@ docker compose -f docker-compose.dev.yml exec backend go test ./...
 
 #### フロントエンドコンテナ
 ```bash
-# npm パッケージを追加
-docker compose -f docker-compose.dev.yml exec frontend npm install axios
+# パッケージを追加
+docker compose -f docker-compose.dev.yml exec frontend pnpm add axios
 
 # TypeScript の型チェック
-docker compose -f docker-compose.dev.yml exec frontend npm run type-check
+docker compose -f docker-compose.dev.yml exec frontend pnpm run type-check
 
 # ビルド
-docker compose -f docker-compose.dev.yml exec frontend npm run build
+docker compose -f docker-compose.dev.yml exec frontend pnpm run build
 ```
 
 ## 🐛 デバッグ
@@ -219,7 +219,7 @@ docker compose -f docker-compose.dev.yml exec backend go mod tidy
 docker compose -f docker-compose.dev.yml restart backend
 
 # フロントエンド
-docker compose -f docker-compose.dev.yml exec frontend npm install
+docker compose -f docker-compose.dev.yml exec frontend pnpm install
 docker compose -f docker-compose.dev.yml restart frontend
 ```
 

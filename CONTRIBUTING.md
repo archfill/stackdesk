@@ -45,9 +45,9 @@ go test -race ./...
 
 # Frontend
 cd frontend
-npm ci
-npm run lint
-npm run build
+pnpm install --frozen-lockfile
+pnpm run lint
+pnpm run build
 ```
 
 CI runs the same checks on every push and pull request.

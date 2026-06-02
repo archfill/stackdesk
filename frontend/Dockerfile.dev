@@ -1,16 +1,19 @@
 # 開発用Dockerfile
 FROM node:26-alpine
 
+# corepack で package.json の packageManager フィールドから pnpm 取得
+RUN corepack enable
+
 WORKDIR /app
 
-# package.jsonとpackage-lock.jsonをコピー
-COPY package*.json ./
+# 依存関係ファイルをコピー
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 
 # 依存関係をインストール
-RUN npm install
+RUN pnpm install --frozen-lockfile
 
 # ポート公開
 EXPOSE 5173
 
 # 開発サーバー起動
-CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
+CMD ["pnpm", "run", "dev", "--", "--host", "0.0.0.0"]

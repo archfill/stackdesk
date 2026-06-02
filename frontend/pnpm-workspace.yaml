@@ -1,0 +1,16 @@
+supportedArchitectures:
+  os:
+    - linux
+    - darwin
+    - win32
+  cpu:
+    - x64
+    - arm64
+
+allowBuilds:
+  "@swc/core": true
+
+# Supply-chain age policy: disabled because OSS dev typically wants
+# fresh patches (e.g. eslint plugins). Re-enable with a value in days
+# (e.g. 7) once the project is established.
+minimumReleaseAge: 0
