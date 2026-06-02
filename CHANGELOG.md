@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.1](https://github.com/archfill/stackdesk/compare/v0.1.0...v0.1.1) (2026-06-02)
+
+
+### Bug Fixes
+
+* **frontend:** regenerate package-lock to add missing optional natives ([d8c13ee](https://github.com/archfill/stackdesk/commit/d8c13ee013cfa75d66cfe52cae0f3413c703fbbb))
+* **frontend:** restore @emnapi/core and @emnapi/runtime in package-lock ([78b534e](https://github.com/archfill/stackdesk/commit/78b534ecfc705ea628986033dee9d7770de0b790))
+
 ## [0.1.0](https://github.com/archfill/stackdesk/compare/v0.0.1...v0.1.0) (2026-06-02)
 
 
