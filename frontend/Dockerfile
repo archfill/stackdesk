@@ -1,8 +1,8 @@
 # ビルドステージ
 FROM node:26-alpine AS builder
 
-# corepack で package.json の packageManager フィールドから pnpm 取得
-RUN corepack enable
+# corepack は node:26-alpine では同梱されなくなったため npm から導入
+RUN npm install -g corepack && corepack enable
 
 WORKDIR /app
 
