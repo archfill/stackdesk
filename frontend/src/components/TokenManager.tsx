@@ -1,9 +1,11 @@
 import { useState } from "react";
 import {
   AlertTriangle,
+  Braces,
   ClipboardCheck,
   Copy,
   KeyRound,
+  PlugZap,
   Trash2,
   X,
 } from "lucide-react";
@@ -14,6 +16,7 @@ import {
   useMCPTokens,
   useRevokeMCPToken,
 } from "../hooks/useTokens";
+import { getMCPUrl } from "../api/client";
 import { cn } from "../lib/utils";
 import { translateError } from "../lib/translateError";
 import type { MCPToken, MCPTokenCreated } from "../types";
@@ -29,6 +32,52 @@ function tokenStatus(t: MCPToken): "active" | "revoked" {
   return t.revokedAt ? "revoked" : "active";
 }
 
+type CopyTarget = "endpoint" | "exampleConfig" | "token" | "createdConfig";
+
+function buildClaudeConfig(mcpUrl: string, token: string): string {
+  return JSON.stringify(
+    {
+      mcpServers: {
+        stackdesk: {
+          type: "http",
+          url: mcpUrl,
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      },
+    },
+    null,
+    2,
+  );
+}
+
+async function copyToClipboard(value: string): Promise<void> {
+  if (navigator.clipboard?.writeText) {
+    try {
+      await navigator.clipboard.writeText(value);
+      return;
+    } catch {
+      // Fall back for embedded browsers or stricter clipboard permissions.
+    }
+  }
+
+  const textarea = document.createElement("textarea");
+  textarea.value = value;
+  textarea.setAttribute("readonly", "");
+  textarea.style.position = "fixed";
+  textarea.style.opacity = "0";
+  textarea.style.pointerEvents = "none";
+  document.body.appendChild(textarea);
+  textarea.select();
+
+  try {
+    if (!document.execCommand("copy")) {
+      throw new Error("copy command failed");
+    }
+  } finally {
+    document.body.removeChild(textarea);
+  }
+}
+
 export default function TokenManager() {
   const { t } = useTranslation("tokens");
   const { t: tErr } = useTranslation("errors");
@@ -39,7 +88,9 @@ export default function TokenManager() {
   const revoke = useRevokeMCPToken();
   const [name, setName] = useState("");
   const [justCreated, setJustCreated] = useState<MCPTokenCreated | null>(null);
-  const [copied, setCopied] = useState(false);
+  const [copiedTarget, setCopiedTarget] = useState<CopyTarget | null>(null);
+  const mcpUrl = getMCPUrl();
+  const exampleConfig = buildClaudeConfig(mcpUrl, "sdt_xxxxxxxx...");
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -47,16 +98,15 @@ export default function TokenManager() {
     const res = await create.mutateAsync(name.trim());
     setJustCreated(res);
     setName("");
-    setCopied(false);
+    setCopiedTarget(null);
   };
 
-  const handleCopy = async () => {
-    if (!justCreated) return;
+  const handleCopy = async (value: string, target: CopyTarget) => {
     try {
-      await navigator.clipboard.writeText(justCreated.plaintext);
-      setCopied(true);
+      await copyToClipboard(value);
+      setCopiedTarget(target);
     } catch {
-      setCopied(false);
+      setCopiedTarget(null);
     }
   };
 
@@ -99,6 +149,73 @@ export default function TokenManager() {
 
       <div className="flex-1 overflow-auto px-8 py-6">
         <div className="mx-auto flex max-w-5xl flex-col gap-6">
+          <section className="surface overflow-hidden rounded-[6px]">
+            <header className="flex items-center justify-between border-b border-[color:var(--color-rule)] px-5 py-3">
+              <div className="flex items-center gap-2">
+                <PlugZap
+                  className="size-[14px] text-[color:var(--color-acid)]"
+                  strokeWidth={1.6}
+                />
+                <h2 className="font-display text-[13px] font-semibold tracking-tight text-[color:var(--color-text-0)]">
+                  {t("connection.title")}
+                </h2>
+              </div>
+              <span className="label-eyebrow">{t("connection.transport")}</span>
+            </header>
+
+            <div className="grid gap-0 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)]">
+              <div className="border-b border-[color:var(--color-rule)] px-5 py-4 lg:border-b-0 lg:border-r">
+                <p className="label-eyebrow">{t("connection.endpointLabel")}</p>
+                <div className="mt-2 flex items-center gap-2 rounded-[3px] border border-[color:var(--color-rule-bright)] bg-[color:var(--color-ink-0)] px-2.5 py-2">
+                  <code className="min-w-0 flex-1 break-all font-mono text-[11.5px] text-[color:var(--color-acid)]">
+                    {mcpUrl}
+                  </code>
+                  <CopyButton
+                    copied={copiedTarget === "endpoint"}
+                    label={tCommon("actions.copy")}
+                    copiedLabel={tCommon("actions.copied")}
+                    onClick={() => handleCopy(mcpUrl, "endpoint")}
+                  />
+                </div>
+                <p className="mt-3 text-[12px] leading-relaxed text-[color:var(--color-text-2)]">
+                  <Trans
+                    i18nKey="connection.help"
+                    t={t}
+                    components={{
+                      code: <code className="font-mono" />,
+                    }}
+                  />
+                </p>
+              </div>
+
+              <div className="px-5 py-4">
+                <div className="flex items-center justify-between gap-3">
+                  <p className="label-eyebrow">{t("connection.configLabel")}</p>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() =>
+                      handleCopy(exampleConfig, "exampleConfig")
+                    }
+                  >
+                    {copiedTarget === "exampleConfig" ? (
+                      <ClipboardCheck strokeWidth={1.7} />
+                    ) : (
+                      <Copy strokeWidth={1.7} />
+                    )}
+                    {copiedTarget === "exampleConfig"
+                      ? tCommon("actions.copied")
+                      : t("connection.copyExample")}
+                  </Button>
+                </div>
+                <pre className="mt-2 max-h-[220px] overflow-auto rounded-[3px] border border-[color:var(--color-rule)] bg-[color:var(--color-ink-0)] p-3 font-mono text-[11.5px] leading-relaxed text-[color:var(--color-text-1)]">
+                  {exampleConfig}
+                </pre>
+              </div>
+            </div>
+          </section>
+
           <section className="surface overflow-hidden rounded-[6px]">
             <header className="flex items-center justify-between border-b border-[color:var(--color-rule)] px-5 py-3">
               <div className="flex items-center gap-2">
@@ -146,7 +263,8 @@ export default function TokenManager() {
             {justCreated && (
               <PlaintextReveal
                 token={justCreated}
-                copied={copied}
+                copiedTarget={copiedTarget}
+                mcpUrl={mcpUrl}
                 onCopy={handleCopy}
                 onClose={() => setJustCreated(null)}
               />
@@ -302,17 +420,20 @@ export default function TokenManager() {
 
 function PlaintextReveal({
   token,
-  copied,
+  copiedTarget,
+  mcpUrl,
   onCopy,
   onClose,
 }: {
   token: MCPTokenCreated;
-  copied: boolean;
-  onCopy: () => void;
+  copiedTarget: CopyTarget | null;
+  mcpUrl: string;
+  onCopy: (value: string, target: CopyTarget) => void;
   onClose: () => void;
 }) {
   const { t: tt } = useTranslation("tokens");
   const { t: tCommon } = useTranslation("common");
+  const createdConfig = buildClaudeConfig(mcpUrl, token.plaintext);
   return (
     <div className="border-t border-[color:color-mix(in_srgb,var(--color-acid)_40%,transparent)] bg-[color:var(--color-acid-soft)] px-5 py-4">
       <div className="flex items-start gap-3">
@@ -338,27 +459,32 @@ function PlaintextReveal({
             <code className="flex-1 break-all font-mono text-[11.5px] text-[color:var(--color-acid)]">
               {token.plaintext}
             </code>
-            <button
-              onClick={onCopy}
-              className={cn(
-                "flex h-7 items-center gap-1.5 rounded-[2px] border px-2 font-mono text-[10.5px] uppercase tracking-[0.12em] transition-colors",
-                copied
-                  ? "border-[color:color-mix(in_srgb,var(--color-up)_45%,transparent)] bg-[color:var(--color-up-soft)] text-[color:var(--color-up)]"
-                  : "border-[color:var(--color-rule-bright)] bg-[color:var(--color-ink-1)] text-[color:var(--color-text-1)] hover:text-[color:var(--color-text-0)]",
-              )}
-            >
-              {copied ? (
-                <>
-                  <ClipboardCheck className="size-[12px]" strokeWidth={1.7} />
-                  {tCommon("actions.copied")}
-                </>
-              ) : (
-                <>
-                  <Copy className="size-[12px]" strokeWidth={1.7} />
-                  {tCommon("actions.copy")}
-                </>
-              )}
-            </button>
+            <CopyButton
+              copied={copiedTarget === "token"}
+              label={tCommon("actions.copy")}
+              copiedLabel={tCommon("actions.copied")}
+              onClick={() => onCopy(token.plaintext, "token")}
+            />
+          </div>
+          <div className="mt-3 rounded-[3px] border border-[color:var(--color-rule-bright)] bg-[color:var(--color-ink-0)]">
+            <div className="flex items-center justify-between gap-3 border-b border-[color:var(--color-rule)] px-2.5 py-2">
+              <div className="flex items-center gap-2">
+                <Braces
+                  className="size-[13px] text-[color:var(--color-text-2)]"
+                  strokeWidth={1.6}
+                />
+                <span className="label-eyebrow">{tt("reveal.configLabel")}</span>
+              </div>
+              <CopyButton
+                copied={copiedTarget === "createdConfig"}
+                label={tt("reveal.copyConfig")}
+                copiedLabel={tCommon("actions.copied")}
+                onClick={() => onCopy(createdConfig, "createdConfig")}
+              />
+            </div>
+            <pre className="max-h-[220px] overflow-auto p-3 font-mono text-[11.5px] leading-relaxed text-[color:var(--color-text-1)]">
+              {createdConfig}
+            </pre>
           </div>
         </div>
         <button
@@ -370,5 +496,37 @@ function PlaintextReveal({
         </button>
       </div>
     </div>
+  );
+}
+
+function CopyButton({
+  copied,
+  label,
+  copiedLabel,
+  onClick,
+}: {
+  copied: boolean;
+  label: string;
+  copiedLabel: string;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        "flex h-7 shrink-0 items-center gap-1.5 rounded-[2px] border px-2 font-mono text-[10.5px] uppercase tracking-[0.12em] transition-colors",
+        copied
+          ? "border-[color:color-mix(in_srgb,var(--color-up)_45%,transparent)] bg-[color:var(--color-up-soft)] text-[color:var(--color-up)]"
+          : "border-[color:var(--color-rule-bright)] bg-[color:var(--color-ink-1)] text-[color:var(--color-text-1)] hover:text-[color:var(--color-text-0)]",
+      )}
+    >
+      {copied ? (
+        <ClipboardCheck className="size-[12px]" strokeWidth={1.7} />
+      ) : (
+        <Copy className="size-[12px]" strokeWidth={1.7} />
+      )}
+      {copied ? copiedLabel : label}
+    </button>
   );
 }

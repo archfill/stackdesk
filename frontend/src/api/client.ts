@@ -7,7 +7,18 @@ import type {
   UserRole,
 } from "../types";
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
+export const API_BASE_URL =
+  import.meta.env.VITE_API_URL || "http://localhost:8080";
+
+const CONFIGURED_MCP_URL = import.meta.env.VITE_MCP_URL;
+
+export function getMCPUrl(baseUrl: string = API_BASE_URL): string {
+  if (CONFIGURED_MCP_URL) {
+    return new URL(CONFIGURED_MCP_URL, window.location.origin).toString();
+  }
+
+  return new URL("/mcp", baseUrl).toString();
+}
 
 class ApiClient {
   private baseUrl: string;
