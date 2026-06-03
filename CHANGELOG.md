@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.2.0](https://github.com/archfill/stackdesk/compare/v0.1.1...v0.2.0) (2026-06-03)
+
+
+### Features
+
+* **mcp:** add connection setup guidance to token screen ([d1137d5](https://github.com/archfill/stackdesk/commit/d1137d55432d0b468ee20a920a0219d61c946607))
+
+
+### Bug Fixes
+
+* **docker:** install corepack via npm before enabling ([4294067](https://github.com/archfill/stackdesk/commit/42940674f96b3b02f0f14408fd3a857c0b0386d8))
+
 ## [0.1.1](https://github.com/archfill/stackdesk/compare/v0.1.0...v0.1.1) (2026-06-02)
 
 
