@@ -7,8 +7,8 @@ require (
 	github.com/gin-contrib/cors v1.7.7
 	github.com/gin-gonic/gin v1.12.0
 	github.com/modelcontextprotocol/go-sdk v1.6.1
-	golang.org/x/crypto v0.52.0
-	modernc.org/sqlite v1.51.0
+	golang.org/x/crypto v0.53.0
+	modernc.org/sqlite v1.52.0
 )
 
 require (
@@ -67,10 +67,10 @@ require (
 	go.opentelemetry.io/otel/metric v1.38.0 // indirect
 	go.opentelemetry.io/otel/trace v1.38.0 // indirect
 	golang.org/x/arch v0.23.0 // indirect
-	golang.org/x/net v0.54.0 // indirect
+	golang.org/x/net v0.55.0 // indirect
 	golang.org/x/oauth2 v0.35.0 // indirect
-	golang.org/x/sys v0.45.0 // indirect
-	golang.org/x/text v0.37.0 // indirect
+	golang.org/x/sys v0.46.0 // indirect
+	golang.org/x/text v0.38.0 // indirect
 	golang.org/x/time v0.14.0 // indirect
 	google.golang.org/protobuf v1.36.10 // indirect
 	gotest.tools/v3 v3.5.2 // indirect
